@@ -5,6 +5,7 @@
                 <!-- <header/> -->
             </div>
             <div class="main_container">
+                <!-- <div class="column" v-if="!showConfirmStep"> -->
                 <div class="column">
                     <div class="top_content">
                         <h1>Створіть ваш особистий профіль</h1>
@@ -23,40 +24,171 @@
                         <hr class="line" />
                     </div>
                     <div class="bottom_content">
-                        <div class="input_container">
-                            <label for="firstName">Ім'я</label>
-                            <input type="text" name="firstName" />
-                        </div>
-                        <div class="input_container">
-                            <label for="lastName">Фамілія</label>
-                            <input type="text" name="lastName" />
-                        </div>
-                        <div class="input_container">
-                            <label for="email">Email</label>
-                            <input type="text" name="email" />
-                        </div>
-                        <div class="input_container">
-                            <label for="password">Пароль</label>
-                            <input type="password" name="password" />
-                        </div>
-                        <div class="input_container">
-                            <label for="repeatPassword">Повторіть пароль</label>
-                            <input type="password" name="repeatPassword" />
-                        </div>
-                        <div class="terms_container">
-                            <input type="checkbox" id="terms_checkbox" />
-                            <p>Я даю згоду на обробку персональних даних</p>
-                        </div>
-                        <div class="submit_button_container">
-                            <button>Зареєструватись</button>
-                            <p>
-                                Вже зареєстровані?
-                                <span
-                                    @click="$router.push({ name: 'loginPage' })"
-                                    >Увійдіть</span
+                        <form @submit.prevent="register">
+                            <div class="input_container">
+                                <label for="firstName">Ім'я</label>
+                                <input
+                                    type="text"
+                                    required
+                                    class="input"
+                                    :class="{
+                                        'error-input':
+                                            formLengthErrors.firstName,
+                                    }"
+                                    name="firstName"
+                                    v-model="form.firstName"
+                                    @focusout="checkMinLength('firstName')"
+                                />
+                                <p
+                                    class="error_info"
+                                    v-if="formLengthErrors.firstName"
                                 >
-                            </p>
-                        </div>
+                                    Мінімальна кількість символів - 3
+                                </p>
+                            </div>
+                            <div class="input_container">
+                                <label for="lastName">Фамілія</label>
+                                <input
+                                    type="text"
+                                    required
+                                    name="lastName"
+                                    class="input"
+                                    :class="{
+                                        'error-input':
+                                            formLengthErrors.lastName,
+                                    }"
+                                    v-model="form.lastName"
+                                    @focusout="checkMinLength('lastName')"
+                                />
+                                <p
+                                    class="error_info"
+                                    v-if="
+                                        form.lastName.length &&
+                                        formLengthErrors.lastName
+                                    "
+                                >
+                                    Мінімальна кількість символів - 3
+                                </p>
+                            </div>
+                            <div class="input_container">
+                                <label for="email">Email</label>
+                                <input
+                                    type="text"
+                                    required
+                                    name="email"
+                                    class="input"
+                                    :class="{
+                                        'error-input': emailError,
+                                    }"
+                                    v-model="form.email"
+                                    @focusout="validateEmail()"
+                                />
+                                <p class="error_info" v-if="emailError">
+                                    Не валідна пошта
+                                </p>
+                            </div>
+                            <div class="input_container">
+                                <label for="password">Пароль</label>
+                                <input
+                                    type="password"
+                                    required
+                                    name="password"
+                                    class="input"
+                                    :class="{
+                                        'error-input': passwordError,
+                                    }"
+                                    v-model="form.password"
+                                    @focusout="validatePassword()"
+                                />
+                                <p class="error_info" v-if="passwordError">
+                                    Мінімальна кількість символів - 5
+                                </p>
+                            </div>
+                            <div class="input_container">
+                                <label for="repeatPassword"
+                                    >Повторіть пароль</label
+                                >
+                                <input
+                                    type="password"
+                                    required
+                                    name="repeatPassword"
+                                    class="input"
+                                    :class="{
+                                        'error-input': passwordMissMatchError,
+                                    }"
+                                    v-model="form.repeatPassword"
+                                    @focusout="paswordMatching()"
+                                />
+                                <p
+                                    class="error_info"
+                                    v-if="passwordMissMatchError"
+                                >
+                                    Паролі не однакові
+                                </p>
+                            </div>
+                            <div class="terms_container">
+                                <input
+                                    type="checkbox"
+                                    required
+                                    id="terms_checkbox"
+                                    v-model="terms"
+                                />
+                                <p>Я даю згоду на обробку персональних даних</p>
+                            </div>
+                            <div class="submit_button_container">
+                                <button type="submit">Зареєструватись</button>
+                                <span
+                                    class="error_info span"
+                                    v-if="errorsInterruptRegistration"
+                                >
+                                    Заповніть обов'язкові поля
+                                </span>
+                                <p>
+                                    Вже зареєстровані?
+                                    <span
+                                        @click="
+                                            $router.push({ name: 'loginPage' })
+                                        "
+                                        >Увійдіть</span
+                                    >
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="column" v-if="false">
+                    <div class="top_content">
+                        <h1>Створіть ваш особистий профіль</h1>
+                        <p>
+                            Все що вам потрібно для аналізу данних в одному
+                            місці за 5-хвилин
+                        </p>
+                    </div>
+                    <div class="confirm_registration">
+                        <h1>Підтвердіть реєстрацію</h1>
+                        <p>
+                            Введіть чотирьохзначний код, який прийшов вам на
+                            пошту
+                        </p>
+                        <span>{{ form.email }}</span>
+                        <input
+                            class="input"
+                            type="number"
+                            v-model="confirmCode"
+                            placeholder="Введіть код"
+                            minlength="4"
+                            :class="{ 'error-input': confirmCodeError }"
+                            @focusout="validateConfirmCode()"
+                        />
+                        <button
+                            :disabled="
+                                confirmCode === null ||
+                                (!confirmCode &&
+                                    confirmCode.length !== confirmCodeLength)
+                            "
+                        >
+                            Підтвердити
+                        </button>
                     </div>
                 </div>
                 <div class="column">
@@ -69,6 +201,12 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import apiEndpoints from "@/constants/apiEndpoints";
+import axios from "axios";
+const REQUIRED_NAMES_LENGTH = 3;
+const REQUIRED_EMAIL_LENGTH = 5;
+const REQUIRED_PASSWORD_LENGTH = 5;
+const CONFIRM_CODE_LENGTH = 4;
 
 export default {
     name: "RegisterPage",
@@ -76,7 +214,133 @@ export default {
         Icon,
     },
     data() {
-        return {};
+        return {
+            form: {
+                firstName: "",
+                lastName: "",
+                email: "",
+                password: "",
+                repeatPassword: "",
+            },
+            terms: false,
+            formLengthErrors: {
+                firstName: false,
+                lastName: false,
+            },
+            emailError: false,
+            passwordError: false,
+            passwordMissMatchError: false,
+            confirmCodeLength: CONFIRM_CODE_LENGTH,
+            confirmCode: "",
+            confirmCodeError: "",
+            showConfirmStep: false,
+        };
+    },
+    watch: {
+        "form.firstName": {
+            handler() {
+                if (this.formLengthErrors.firstName)
+                    this.formLengthErrors.firstName = false;
+            },
+        },
+        "form.lastName": {
+            handler() {
+                if (this.formLengthErrors.lastName)
+                    this.formLengthErrors.lastName = false;
+            },
+        },
+        "form.email": {
+            handler() {
+                if (this.emailError) this.emailError = false;
+            },
+        },
+        "form.password": {
+            handler() {
+                if (this.passwordError) this.passwordError = false;
+            },
+        },
+        "form.repeatPassword": {
+            handler() {
+                if (this.repeatPassword) this.passwordMissMatchError = false;
+            },
+        },
+        confirmCode() {
+            if (this.confirmCodeError) this.confirmCodeError = false;
+        },
+    },
+    computed: {
+        errorsInterruptRegistration() {
+            let result = false;
+            if (
+                this.formLengthErrors.firstName ||
+                this.formLengthErrors.lastName ||
+                this.emailError ||
+                this.passwordError ||
+                this.repeatPassword
+            ) {
+                result = true;
+            }
+            return result;
+        },
+    },
+    methods: {
+        checkMinLength(field = "") {
+            console.log("checkMinLength");
+            if (
+                !this.form[field] ||
+                (this.form[field] &&
+                    this.form[field].length < REQUIRED_NAMES_LENGTH)
+            ) {
+                this.formLengthErrors[field] = true;
+            }
+        },
+        validateEmail() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (
+                !emailRegex.test(this.form.email) ||
+                this.form.email.length < REQUIRED_EMAIL_LENGTH
+            )
+                this.emailError = true;
+        },
+        validatePassword() {
+            if (
+                !this.form.password ||
+                this.form.password.length < REQUIRED_PASSWORD_LENGTH
+            ) {
+                this.passwordError = true;
+            }
+        },
+        paswordMatching() {
+            if (this.form.password !== this.form.repeatPassword) {
+                this.passwordMissMatchError = true;
+            }
+        },
+        validateConfirmCode() {
+            if (this.confirmCode.length != this.confirmCodeLength) {
+                this.confirmCodeError = true;
+            }
+        },
+        async register() {
+            this.showConfirmStep = true;
+            if (!this.errorsInterruptRegistration) {
+                axios
+                    .post(apiEndpoints.user.signup, {
+                        firstName: this.form.firstName,
+                        lastName: this.form.lastName,
+                        email: this.form.email,
+                        password: this.form.password,
+                    })
+                    .then((resp) => {
+                        if (resp && resp.data) {
+                            this.router.push({ name: "homePage" });
+                        }
+                    })
+                    .catch((err) => {
+                        console.log("register error --->", err);
+                    });
+            }
+        },
     },
 };
 </script>
@@ -175,7 +439,7 @@ export default {
             font-weight: 600;
             font-size: 20px;
         }
-        input {
+        .input {
             margin-top: 15px;
             display: block;
 
@@ -231,5 +495,68 @@ export default {
             cursor: pointer;
         }
     }
+}
+.confirm_registration {
+    margin-top: 150px;
+
+    text-align: center;
+    align-items: center;
+
+    h1 {
+        font-weight: 600;
+        font-size: 20px;
+        color: #1f1f1f;
+    }
+
+    p {
+        margin-top: 15px;
+        font-size: 18px;
+    }
+
+    .input {
+        margin: 30px auto;
+        display: block;
+        justify-content: center;
+        border: 2px solid #e4e4e4;
+        padding: 8px 5px;
+        font-size: 16px;
+        // -webkit-appearance: none;
+        &:focus {
+            border: 2px solid #c4c0c0;
+            transition: 0.3s ease;
+        }
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    button {
+        background-color: #509ee3;
+        color: #ffff;
+        margin-top: 30px;
+        font-size: 20px;
+        padding: 15px 100px;
+
+        transition: background-color 200ms ease 0s;
+
+        &:hover {
+            background-color: #2d86d4;
+        }
+    }
+}
+
+.error_info {
+    color: rgb(232, 59, 70);
+    margin-top: 10px;
+}
+
+.span {
+    margin-top: 10px;
+}
+.error-input {
+    border: 2px solid #e83b46 !important;
 }
 </style>

@@ -7,16 +7,33 @@
         <div class="main_container">
             <div class="input_container">
                 <label for="email">Пошта</label>
-                <input type="text" id="email" />
+                <input
+                    :class="{
+                        'error-input': loginError,
+                    }"
+                    type="text"
+                    id="email"
+                    v-model="form.email"
+                />
             </div>
             <div class="input_container">
                 <label for="password">Пароль</label>
-                <input type="text" id="password" />
+                <input
+                    :class="{
+                        'error-input': loginError,
+                    }"
+                    type="password"
+                    id="password"
+                    v-model="form.password"
+                />
+                <span class="error-info" v-if="loginError"
+                    >Невірна пошта чи пароль</span
+                >
             </div>
             <div class="forgot_password">
                 <p>Забули пароль?</p>
             </div>
-            <button>Увійти</button>
+            <button @click="login">Увійти</button>
             <div class="bottom_info_container">
                 <p>Ще немає аккаунту?</p>
                 <router-link to="/signup">Зареєструватись</router-link>
@@ -26,8 +43,55 @@
 </template>
 
 <script>
+import axios from "axios";
+import apiEndpoints from "@/constants/apiEndpoints";
+
 export default {
     name: "LoginPage",
+    data() {
+        return {
+            form: {
+                email: "",
+                password: "",
+            },
+            loginError: false,
+        };
+    },
+    watch: {
+        complexFormWatcher() {
+            if (this.loginError) {
+                this.loginError = false;
+            }
+        },
+    },
+    computed: {
+        complexFormWatcher() {
+            return `${this.form.email}_${this.form.password}`;
+        },
+    },
+    methods: {
+        login() {
+            axios
+                .post(apiEndpoints.user.login, {
+                    email: this.form.email,
+                    password: this.form.password,
+                })
+                .then((resp) => {
+                    if (resp && resp.data && resp.data.user) {
+                        this.router.push({ name: "homePage" });
+                    } else {
+                        this.loginError = true;
+                    }
+                    console.log("resp");
+                    console.log(resp);
+                    this.loginError = true;
+                })
+                .catch((err) => {
+                    console.log("login error --->", err);
+                    this.loginError = true;
+                });
+        },
+    },
 };
 </script>
 
@@ -36,7 +100,6 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    // justify-content: center;
     width: 100%;
     height: 100vh;
     background-color: #fafbfe;
@@ -63,7 +126,6 @@ export default {
 }
 
 .main_container {
-    // margin-top: 30px;
     button {
         margin-top: 50px;
         background-color: rgb(80, 158, 227);
@@ -82,14 +144,12 @@ export default {
 }
 
 .input_container {
-    // display: flex;
     margin-top: 40px;
 
     label {
         font-size: 15px;
         font-weight: 600;
     }
-
     input {
         margin-top: 10px;
         display: block;
@@ -127,5 +187,16 @@ export default {
         color: rgb(80, 158, 227);
         font-weight: 700;
     }
+}
+
+.error-info {
+    position: relative;
+    color: red;
+    top: 8px;
+    font-weight: normal;
+    font-size: 20px;
+}
+.error-input {
+    border: solid 2px red !important;
 }
 </style>
