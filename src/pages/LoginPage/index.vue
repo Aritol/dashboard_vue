@@ -45,6 +45,7 @@
 <script>
 import axios from "axios";
 import apiEndpoints from "@/constants/apiEndpoints";
+import { mapActions } from "vuex";
 
 export default {
     name: "LoginPage",
@@ -70,6 +71,7 @@ export default {
         },
     },
     methods: {
+        ...mapActions("auth", ["setAuthData"]),
         login() {
             axios
                 .post(apiEndpoints.user.login, {
@@ -78,13 +80,11 @@ export default {
                 })
                 .then((resp) => {
                     if (resp && resp.data && resp.data.user) {
-                        this.router.push({ name: "homePage" });
+                        this.setAuthData(resp.data.user);
+                        this.$router.push({ name: "homePage" });
                     } else {
                         this.loginError = true;
                     }
-                    console.log("resp");
-                    console.log(resp);
-                    this.loginError = true;
                 })
                 .catch((err) => {
                     console.log("login error --->", err);

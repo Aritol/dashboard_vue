@@ -471,6 +471,7 @@ export default {
 
 .submit_button_container {
     margin-top: 30px;
+    margin-bottom: 50px;
 
     button {
         padding: 25px 0px;

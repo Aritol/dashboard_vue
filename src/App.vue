@@ -1,12 +1,12 @@
 <template>
     <div class="app">
-        <Header/>
+        <Header />
         <router-view></router-view>
     </div>
 </template>
 
 <script>
-import  Header  from "@/components/Header";
+import Header from "@/components/Header";
 export default {
     name: "App",
     components: {
@@ -15,10 +15,11 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 @import "@/assets/styles/null.scss";
 .app {
-    /* margin: 0 auto; */
+    // margin: 0 auto;
+    // max-width: 1240px;
 }
 
 /* #app {

@@ -24,11 +24,15 @@
                     />
                 </div>
             </div>
-            <div class="info_container">
-                <p>Андреянов Максим Олександрович</p>
+            <div class="info_container" v-if="isAuthorized">
+                <p>{{}}</p>
             </div>
             <div class="buttons_container">
-                <div class="button">
+                <div
+                    class="button"
+                    v-if="isAuthorized"
+                    @click="$router.push({ name: 'settingsPage' })"
+                >
                     <p>Налаштування</p>
                     <Icon
                         icon="material-symbols:settings-rounded"
@@ -36,7 +40,7 @@
                         color="#888888"
                     />
                 </div>
-                <div class="button">
+                <div class="button" v-if="isAuthorized">
                     <p>Довідка</p>
                     <Icon
                         icon="material-symbols:info-outline"
@@ -44,8 +48,20 @@
                         color="#888888"
                     />
                 </div>
-                <div class="button">
+                <div class="button" v-if="isAuthorized" @click="logoutUser">
                     <p>Вихід</p>
+                    <Icon
+                        icon="material-symbols:exit-to-app"
+                        width="40px"
+                        color="#888888"
+                    />
+                </div>
+                <div
+                    class="button"
+                    v-else
+                    @click="$router.push({ name: 'loginPage' })"
+                >
+                    <p>Вхід</p>
                     <Icon
                         icon="material-symbols:exit-to-app"
                         width="40px"
@@ -59,6 +75,7 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
     name: "avatar",
@@ -70,6 +87,18 @@ export default {
             showSubMenu: false,
             profile: false,
         };
+    },
+    computed: {
+        ...mapGetters("auth", ["authorized"]),
+        isAuthorized() {
+            return this.authorized;
+        },
+    },
+    methods: {
+        ...mapActions("auth", ["logout"]),
+        logoutUser() {
+            this.logout();
+        },
     },
 };
 </script>

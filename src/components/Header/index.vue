@@ -1,42 +1,66 @@
 <template>
     <div>
         <div class="main_container">
-            <div class="logo_container">
-                <img src="@/assets/images/logo.png" alt="" />
-            </div>
-            <div class="menu_container">
-                <div class="menu_list">
-                    <div class="menu_item">
-                        <p
-                            href=""
-                            @click="$router.push({ name: 'newReportPage' })"
-                        >
-                            Створити звіт
-                        </p>
-                    </div>
-                    <div class="menu_item">
-                        <p
-                            href=""
-                            @click="$router.push({ name: 'myReportsPage' })"
-                        >
-                            Мої звіти
-                        </p>
-                    </div>
-                    <div class="menu_item">
-                        <p
-                            href=""
-                            @click="$router.push({ name: 'settingsPage' })"
-                        >
-                            Налаштування
-                        </p>
-                    </div>
-                    <div class="menu_item">
-                        <p href="" @click="logout">Вихід</p>
+            <div class="wrapp">
+                <div
+                    class="logo_container"
+                    @click="$router.push({ name: 'homePage' })"
+                >
+                    <img src="@/assets/images/logo.png" alt="" />
+                </div>
+                <div class="menu_container">
+                    <div class="menu_list">
+                        <div class="menu_item">
+                            <p
+                                v-if="isAuthorized"
+                                @click="$router.push({ name: 'newReportPage' })"
+                            >
+                                Створити звіт
+                            </p>
+                            <p
+                                v-else
+                                @click="$router.push({ name: 'homePage' })"
+                            >
+                                Головна
+                            </p>
+                        </div>
+                        <div class="menu_item">
+                            <p
+                                v-if="isAuthorized"
+                                @click="$router.push({ name: 'myReportsPage' })"
+                            >
+                                Мої звіти
+                            </p>
+                            <p
+                                v-else
+                                @click="$router.push({ name: 'contactsPage' })"
+                            >
+                                Контакти
+                            </p>
+                        </div>
+                        <div class="menu_item">
+                            <p
+                                v-if="isAuthorized"
+                                @click="$router.push({ name: 'settingsPage' })"
+                            >
+                                Налаштування
+                            </p>
+                            <p
+                                v-else
+                                @click="$router.push({ name: 'usersPage' })"
+                            >
+                                Користувачі
+                            </p>
+                        </div>
+                        <div class="menu_item">
+                            <p v-if="isAuthorized" @click="logoutUser">Вихід</p>
+                            <p v-else @click="loginUser">Увійти</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="avatar">
-                <Avatar />
+                <div class="avatar">
+                    <Avatar />
+                </div>
             </div>
         </div>
     </div>
@@ -44,14 +68,27 @@
 
 <script>
 import Avatar from "@/components/Avatar";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
     name: "Header",
     components: {
         Avatar,
     },
+    computed: {
+        ...mapGetters("auth", ["authorized"]),
+        isAuthorized() {
+            return this.authorized;
+        },
+    },
     methods: {
-        logout() {},
+        ...mapActions("auth", ["logout"]),
+        logoutUser() {
+            this.logout();
+        },
+        loginUser() {
+            this.$router.push({ name: "loginPage" });
+        },
     },
 };
 </script>
@@ -59,14 +96,13 @@ export default {
 <style lang="scss" scoped>
 .main_container {
     font-family: Avenir, Helvetica, Arial, sans-serif;
-    display: flex;
+    // display: flex;
     border-bottom: 1px solid #e4e4e4;
     // justify-content: space-between;
 }
 
 .logo_container {
     margin-top: 15px;
-    margin-left: 200px;
 
     img {
         cursor: pointer;
@@ -74,6 +110,11 @@ export default {
     }
 }
 
+.wrapp {
+    margin: 0 auto;
+    max-width: 1240px;
+    display: flex;
+}
 .menu_container {
     margin-top: 15px;
 }
@@ -105,10 +146,7 @@ export default {
     }
 }
 .avatar {
-    // margin-left: auto; /* Замінюємо margin-left: 140px на margin-left: auto */
     margin-top: 10px;
-    // margin-right: 120px;
-    margin-left: 350px;
-    // float: right;
+    margin-left: 130px;
 }
 </style>

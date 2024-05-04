@@ -53,11 +53,9 @@ const store = {
                     });
             });
         },
-
         setAuthData({ commit }, { authData, expiresAt }) {
             commit("setAuthData", { authData, expiresAt });
         },
-
         signup({ commit }, { name, email, password }) {
             return new Promise((resolve, reject) => {
                 axios
@@ -72,7 +70,6 @@ const store = {
                     });
             });
         },
-
         login({ commit }, { email, password }) {
             return new Promise((resolve, reject) => {
                 axios
@@ -90,7 +87,6 @@ const store = {
                     });
             });
         },
-
         logout({ commit }) {
             commit("clearAuthData");
         },
