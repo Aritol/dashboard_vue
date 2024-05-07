@@ -7,17 +7,29 @@
                         <h1 class="center-text">Максим Андреянов</h1>
                         <div class="photo_container">
                             <div class="photo">
-                                <img
-                                    src="@/assets/images/avatar_test.png"
-                                    alt=""
-                                />
+                                <img src="/avatar_test.png" alt="" />
                                 <Icon
                                     icon="material-symbols:delete-outline"
                                     width="40px"
                                     color="#888888"
                                 />
+                                <photo-editor
+                                    v-if="showPhotoEditor"
+                                    class="photo_editor"
+                                    :src="file"
+                                    @savePhoto="savePhotoAfterEdit"
+                                    @close="showPhotoEditor = false"
+                                />
                             </div>
-                            <button>Завантажити інше фото</button>
+                            <button @click="$refs.file.click">
+                                Завантажити інше фото
+                            </button>
+                            <input
+                                type="file"
+                                ref="file"
+                                style="display: none"
+                                @change="fileLoaded"
+                            />
 
                             <div class="info_container">
                                 <p>
@@ -78,11 +90,33 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import PhotoEditor from "@/components/PhotoEditor";
 
 export default {
     name: "Settings",
     components: {
         Icon,
+        PhotoEditor,
+    },
+    data() {
+        return {
+            file: null,
+            showPhotoEditor: false,
+        };
+    },
+    methods: {
+        fileLoaded(event) {
+            const inputedFile = event.target.files[0];
+            if (inputedFile) {
+                this.showPhotoEditor = true;
+                this.file = inputedFile;
+            }
+        },
+        savePhotoAfterEdit(photo) {
+            this.showPhotoEditor = false;
+            console.log("photo");
+            console.log(photo);
+        },
     },
 };
 </script>
@@ -148,7 +182,7 @@ export default {
     button {
         margin-top: 15px;
         background-color: #ff3d17;
-        padding: 20px 20px;
+        padding: 17px 20px;
         font-size: 17px;
         color: #ffffff;
         border-radius: 10px;
@@ -235,5 +269,11 @@ export default {
             }
         }
     }
+}
+
+.photo_editor {
+    // position: absolute;
+    // top: 0;
+    // left: 0;
 }
 </style>
