@@ -12,6 +12,7 @@
                                     icon="material-symbols:delete-outline"
                                     width="40px"
                                     color="#888888"
+                                    @click="showConfirmPopup = true"
                                 />
                                 <photo-editor
                                     v-if="showPhotoEditor"
@@ -84,6 +85,15 @@
                     </div>
                 </div>
             </div>
+            <div class="confirm_delete_container">
+                <confirm-action-popup
+                    v-if="showConfirmPopup"
+                    :headerText="'Видалення фотографії'"
+                    :bodyText="'Бажаєте видалити фото?'"
+                    @close="showConfirmPopup = false"
+                    @submit="deletePhoto"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -91,17 +101,21 @@
 <script>
 import { Icon } from "@iconify/vue";
 import PhotoEditor from "@/components/PhotoEditor";
+import { saveImageToServer, deleteImage } from "@/helpers/data";
+import ConfirmActionPopup from "@/components/common/confirmActionPopup.vue";
 
 export default {
     name: "Settings",
     components: {
         Icon,
         PhotoEditor,
+        ConfirmActionPopup,
     },
     data() {
         return {
             file: null,
             showPhotoEditor: false,
+            showConfirmPopup: false,
         };
     },
     methods: {
@@ -113,9 +127,47 @@ export default {
             }
         },
         savePhotoAfterEdit(photo) {
-            this.showPhotoEditor = false;
             console.log("photo");
             console.log(photo);
+            if (photo) {
+                const formData = new FormData();
+                formData.append("file", photo);
+                // formData.append("userId", userId);
+                saveImageToServer(formData)
+                    .then((response) => {
+                        console.log("response");
+                        console.log(response);
+                        if (
+                            response &&
+                            response.data &&
+                            response.data.uploadSuccess
+                        ) {
+                            this.showPhotoEditor = false;
+                        }
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        this.showPhotoEditor = false;
+                    });
+            }
+        },
+        deletePhoto() {
+            deleteImage()
+                .then((response) => {
+                    if (
+                        response &&
+                        response.data &&
+                        response.data.uploadSuccess
+                    ) {
+                        this.showConfirmPopup = false;
+                    }
+                })
+                .catch((err) => {
+                    console.error(err);
+                    this.showConfirmPopup = false;
+                });
+
+            deleteImage;
         },
     },
 };
@@ -173,8 +225,12 @@ export default {
         overflow: hidden;
         border: 2px solid #000;
         img {
-            width: 100%;
+            // width: 100%;
             // height: 100%;
+        }
+        svg {
+            float: right;
+            cursor: pointer;
         }
     }
 

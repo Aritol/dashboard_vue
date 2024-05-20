@@ -1,7 +1,7 @@
 <template>
     <div class="content_container">
         <div class="header_container">
-            <h1>Почніть роботу з MetaGraph</h1>
+            <h1>Почніть роботу з EasyAnalize</h1>
             <p>Візуалізуйте свої дані просто зрозуміло та безкоштовно.</p>
         </div>
         <div class="main_container">
@@ -81,6 +81,7 @@ export default {
                 .then((resp) => {
                     if (resp && resp.data && resp.data.user) {
                         this.setAuthData(resp.data.user);
+                        console.log("here");
                         this.$router.push({ name: "homePage" });
                     } else {
                         this.loginError = true;

@@ -73,7 +73,11 @@ const store = {
         login({ commit }, { email, password }) {
             return new Promise((resolve, reject) => {
                 axios
-                    .post(apiEndpoints.user.login, { email, password })
+                    // .post(apiEndpoints.user.login, { email, password })
+                    .post("http://localhost:8080/api/users/login", {
+                        email,
+                        password,
+                    })
                     .then((res) => res.data)
                     .then((data) => {
                         commit("setAuthData", { ...data.user });
@@ -112,6 +116,8 @@ const store = {
             state.authData && new Date().getTime() < state.expiresAt,
 
         getError: (state) => state.error,
+        getUserId: (state) => state.authData.userId,
+        getExpiresAt: (state) => state.expiresAt,
     },
 };
 

@@ -1,9 +1,14 @@
 <template>
     <div>
         <div class="container">
-            <div class="header">
-                <!-- <header/> -->
+            <div class="api_response_container" v-if="showApiResult">
+                <api-response-popup
+                    :withTimer="true"
+                    :successResponse="false"
+                    @close="showApiResult = false"
+                />
             </div>
+            <div class="header"></div>
             <div class="main_container">
                 <!-- <div class="column" v-if="!showConfirmStep"> -->
                 <div class="column">
@@ -201,8 +206,10 @@
 
 <script>
 import { Icon } from "@iconify/vue";
-import apiEndpoints from "@/constants/apiEndpoints";
 import axios from "axios";
+import apiEndpoints from "@/constants/apiEndpoints";
+import apiResponsePopup from "@/components/common/apiResponsePopup.vue";
+
 const REQUIRED_NAMES_LENGTH = 3;
 const REQUIRED_EMAIL_LENGTH = 5;
 const REQUIRED_PASSWORD_LENGTH = 5;
@@ -212,6 +219,7 @@ export default {
     name: "RegisterPage",
     components: {
         Icon,
+        apiResponsePopup,
     },
     data() {
         return {
@@ -234,6 +242,7 @@ export default {
             confirmCode: "",
             confirmCodeError: "",
             showConfirmStep: false,
+            showApiResult: false,
         };
     },
     watch: {
@@ -256,12 +265,16 @@ export default {
         },
         "form.password": {
             handler() {
-                if (this.passwordError) this.passwordError = false;
+                if (this.passwordError) {
+                    this.passwordError = false;
+                    // this.passwordMissMatchError = false;
+                }
             },
         },
         "form.repeatPassword": {
             handler() {
-                if (this.repeatPassword) this.passwordMissMatchError = false;
+                if (this.passwordMissMatchError)
+                    this.passwordMissMatchError = false;
             },
         },
         confirmCode() {
@@ -333,11 +346,14 @@ export default {
                     })
                     .then((resp) => {
                         if (resp && resp.data) {
-                            this.router.push({ name: "homePage" });
+                            this.$router.push({ name: "homePage" });
+                        } else {
+                            this.showApiResult = true;
                         }
                     })
                     .catch((err) => {
                         console.log("register error --->", err);
+                        this.showApiResult = true;
                     });
             }
         },
@@ -559,5 +575,10 @@ export default {
 }
 .error-input {
     border: 2px solid #e83b46 !important;
+}
+
+.api_response_container {
+    // position: sticky;
+    // height: 100vh;
 }
 </style>

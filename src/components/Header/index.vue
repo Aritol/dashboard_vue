@@ -1,5 +1,11 @@
 <template>
     <div>
+        <div class="popup_container">
+            <call-back-popup
+                v-if="showCallBackPopup"
+                @close="showCallBackPopup = false"
+            />
+        </div>
         <div class="main_container">
             <div class="wrapp">
                 <div
@@ -31,10 +37,7 @@
                             >
                                 Мої звіти
                             </p>
-                            <p
-                                v-else
-                                @click="$router.push({ name: 'contactsPage' })"
-                            >
+                            <p v-else @click="showCallBackPopup = true">
                                 Контакти
                             </p>
                         </div>
@@ -47,9 +50,9 @@
                             </p>
                             <p
                                 v-else
-                                @click="$router.push({ name: 'usersPage' })"
+                                @click="$router.push({ name: 'partnersPage' })"
                             >
-                                Користувачі
+                                Партнери
                             </p>
                         </div>
                         <div class="menu_item">
@@ -68,12 +71,19 @@
 
 <script>
 import Avatar from "@/components/Avatar";
+import CallBackPopup from "@/components/common/callBackPopup.vue";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
     name: "Header",
     components: {
         Avatar,
+        CallBackPopup,
+    },
+    data() {
+        return {
+            showCallBackPopup: false,
+        };
     },
     computed: {
         ...mapGetters("auth", ["authorized"]),

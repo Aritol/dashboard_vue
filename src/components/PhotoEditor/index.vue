@@ -47,6 +47,7 @@ export default {
             image: {},
             base64Image: null,
             showCropp: false,
+            loading: false,
         };
     },
     watch: {
@@ -76,11 +77,16 @@ export default {
                 aspectRatio: 1,
                 crop: () => {
                     const canvas = this.cropper.getCroppedCanvas();
-                    this.destanation = canvas.toDataURL("image/png");
+                    canvas.toBlob((blob) => {
+                        this.destanation = new File([blob], "filename.jpg", {
+                            type: "image/jpeg",
+                        });
+                    });
                 },
             });
         },
         savePhotoCropped() {
+            this.loading = true;
             this.$emit("savePhoto", this.destanation);
         },
         close() {
@@ -105,8 +111,6 @@ export default {
 <style lang="scss" scoped>
 .container {
     font-family: Avenir, Helvetica, Arial, sans-serif;
-
-    // margin: 0 auto;
     position: absolute;
     top: 0;
     left: 0;
