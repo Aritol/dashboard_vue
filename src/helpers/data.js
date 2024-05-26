@@ -13,3 +13,6 @@ export function saveImageToServer(formData) {
 export function deleteImage() {
     return axios.post(apiEndpoints.user.deleteImage, { withCredentials: true });
 }
+export function getUserData() {
+    return axios.get(apiEndpoints.user.getUserData);
+}

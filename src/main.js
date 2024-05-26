@@ -4,6 +4,7 @@ import router from "./router";
 import store from "./store";
 import axios from "axios";
 
+// axios.defaults.headers["Access-Control-Allow-Origin"] = "*";
 axios.defaults.headers["Access-Control-Allow-Origin"] = "*";
 // axios.defaults.headers["Access-Control-Request-Method"] = "*";
 // axios.defaults.withCredentials = true;

@@ -1,11 +1,195 @@
 <template>
-    <div></div>
+    <div>
+        <div class="container">
+            <div class="wrapper">
+                <div class="top_container">
+                    <h1>Мої звіти</h1>
+                    <div class="buttons_conatainer">
+                        <button
+                            :class="{
+                                active: !deletedReportsPage,
+                            }"
+                            @click="toMyReports"
+                        >
+                            Недавні
+                        </button>
+                        <button
+                            :class="{
+                                active: deletedReportsPage,
+                            }"
+                            @click="toDeletedReports"
+                        >
+                            Видалені
+                        </button>
+                    </div>
+                </div>
+                <div class="line"></div>
+                <div class="main_container">
+                    <div class="add_new">
+                        <h1>Додати новий звіт</h1>
+                        <div class="add_new_boxed">
+                            <div class="wrap">
+                                <Icon
+                                    icon="material-symbols:add"
+                                    color="#4285f4"
+                                    width="150px"
+                                />
+                            </div>
+                            <div class="sub_container">
+                                <p>Пустий звіт</p>
+                                <span>EasyAnalize</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="items_list">
+                        <div class="table_header">
+                            <div class="table_header_item">Назва</div>
+                            <div class="table_header_item">Власник</div>
+                            <div class="table_header_item">Дата перегляду</div>
+                        </div>
+                        <div class="line"></div>
+                        <div class="item">
+                            <resports-list-item />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
+import resportsListItem from "@/components/reports/reportsListItem.vue";
+import { Icon } from "@iconify/vue";
 export default {
     name: "MyReports",
+    components: {
+        resportsListItem,
+        Icon,
+    },
+    computed: {
+        deletedReportsPage() {
+            return this.$route.name === "deletedReports" ? true : false;
+        },
+    },
+    methods: {
+        toDeletedReports() {
+            this.$router.push({ name: "deletedReports" });
+        },
+        toMyReports() {
+            this.$router.push({ name: "myReportsPage" });
+        },
+    },
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.container {
+    font-family: "Roboto", sans-serif;
+    max-width: 1240px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.wrapper {
+    margin-top: 50px;
+}
+.top_container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+
+    h1 {
+        font-size: 26px;
+        color: #3c4043;
+        vertical-align: middle;
+    }
+
+    .buttons_conatainer {
+        margin-left: 30px;
+        button {
+            padding: 12px 25px;
+            font-size: 22px;
+            border: 1px solid #dadce0;
+            color: #5f6368;
+            background-color: transparent;
+
+            &:hover {
+                background-color: #f9f9f9;
+            }
+        }
+
+        .active {
+            color: #1967d2 !important;
+            background-color: #cedcf5 !important;
+
+            // button {
+            &:hover {
+                background-color: #e3ebf8 !important;
+            }
+            // }
+        }
+    }
+}
+.line {
+    // margin-top: 20px;
+    flex-grow: 1;
+    // border: 1px solid #e4e4e4;
+    border-radius: 1em;
+    border-bottom: 1px solid #dadce0;
+}
+
+.main_container {
+    margin-top: 40px;
+}
+.add_new {
+    h1 {
+        font-size: 20px;
+    }
+}
+
+.add_new_boxed {
+    max-width: 310px;
+    margin-top: 30px;
+    padding: 10px;
+    border: 2px solid #dadce0;
+    border-radius: 5px;
+    cursor: pointer;
+    &:hover {
+        border: 2px solid #4285f4;
+    }
+    .wrap {
+        font-size: 20px;
+        text-align: center;
+    }
+    .sub_container {
+        p {
+            margin-bottom: 6px;
+        }
+        span {
+            color: #94969a;
+        }
+    }
+}
+
+.items_list {
+    margin-top: 40px;
+}
+
+.table_header {
+    display: flex;
+    justify-content: space-between;
+    .table_header_item {
+        font-size: 20px;
+        color: #202124;
+        height: 34px;
+        &:nth-child(2) {
+            margin-left: 130px;
+        }
+        &:nth-child(3) {
+            margin-right: 22px;
+        }
+    }
+    // .table_header_item:nth-child(3)
+}
+</style>

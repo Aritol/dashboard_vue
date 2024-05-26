@@ -139,6 +139,7 @@ export default {
         margin-top: 5px;
         margin-left: 100px;
         border-radius: 15px;
+        text-align: center;
         transition: background-color 0.3s;
         &:hover {
             background-color: #f3f8fc;

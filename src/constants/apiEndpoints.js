@@ -4,6 +4,6 @@ export default {
         signup: `${process.env.VUE_APP_API_URL}/users/signup`,
         saveImage: `${process.env.VUE_APP_API_URL}/users/saveImage`,
         deleteImage: `${process.env.VUE_APP_API_URL}/users/deleteImage`,
-        // usersList: `${process.env.VUE_APP_API_URL}/users`,
+        getUserData: `${process.env.VUE_APP_API_URL}/users/getUserData`,
     },
 };

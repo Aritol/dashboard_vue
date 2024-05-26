@@ -101,7 +101,7 @@
 <script>
 import { Icon } from "@iconify/vue";
 import PhotoEditor from "@/components/PhotoEditor";
-import { saveImageToServer, deleteImage } from "@/helpers/data";
+import { saveImageToServer, deleteImage, getUserData } from "@/helpers/data";
 import ConfirmActionPopup from "@/components/common/confirmActionPopup.vue";
 
 export default {
@@ -116,6 +116,14 @@ export default {
             file: null,
             showPhotoEditor: false,
             showConfirmPopup: false,
+            userData: {
+                firstName: "",
+                lastName: "",
+                email: "",
+                password: "",
+            },
+            repeatEmail: "",
+            repeatPassword: "",
         };
     },
     methods: {
@@ -127,8 +135,6 @@ export default {
             }
         },
         savePhotoAfterEdit(photo) {
-            console.log("photo");
-            console.log(photo);
             if (photo) {
                 const formData = new FormData();
                 formData.append("file", photo);
@@ -166,9 +172,30 @@ export default {
                     console.error(err);
                     this.showConfirmPopup = false;
                 });
-
-            deleteImage;
         },
+        getUserData() {
+            console.log("here 2");
+            getUserData()
+                .then((response) => {
+                    console.log("response");
+                    console.log(response);
+                    // if (
+                    //     response &&
+                    //     response.data &&
+                    //     response.data.uploadSuccess
+                    // ) {
+                    //     this.showConfirmPopup = false;
+                    // }
+                })
+                .catch((err) => {
+                    console.log(" here err ---------");
+                    console.error(err);
+                    // this.showConfirmPopup = false;
+                });
+        },
+    },
+    mounted() {
+        this.getUserData();
     },
 };
 </script>
