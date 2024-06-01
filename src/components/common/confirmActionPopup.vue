@@ -17,23 +17,38 @@
                         <p>{{ bodyText }}</p>
                     </div>
                     <div class="buttons">
-                        <button
-                            class="confirm_btn"
-                            v-if="confirmBtnText.length"
-                            @click="sumbit"
-                        >
-                            {{ confirmBtnText }}
-                        </button>
-                        <button class="confirm_btn" v-else @click="sumbit">
-                            Так
-                        </button>
-                        <button
-                            class="cancel_btn"
-                            v-if="showCancelButton"
-                            @click="close"
-                        >
-                            Відмінити
-                        </button>
+                        <div v-if="withLoader">
+                            <button
+                                class="confirm_btn"
+                                @click="sumbit"
+                                :disabled="loading"
+                            >
+                                <span v-if="!loading">{{
+                                    confirmBtnText
+                                }}</span>
+                                <span v-else class="spinner"></span>
+                            </button>
+                            <button
+                                class="cancel_btn"
+                                v-if="showCancelButton"
+                                :disabled="loading"
+                                @click="close"
+                            >
+                                Відмінити
+                            </button>
+                        </div>
+                        <div v-else>
+                            <button class="confirm_btn" @click="sumbit">
+                                {{ confirmBtnText }}
+                            </button>
+                            <button
+                                class="cancel_btn"
+                                v-if="showCancelButton"
+                                @click="close"
+                            >
+                                Відмінити
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -68,7 +83,15 @@ export default {
         },
         confirmBtnText: {
             type: String,
-            default: "",
+            default: "Так",
+        },
+        loading: {
+            type: Boolean,
+            default: true,
+        },
+        withLoader: {
+            type: Boolean,
+            default: true,
         },
     },
     methods: {
@@ -162,11 +185,38 @@ export default {
     }
 
     button {
-        transition: background-color 0.3s ease;
         border-radius: 25px;
         font-size: 20px;
         padding: 15px 0px;
         min-width: 150px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    margin: 0px 20px;
+    border: 3px solid #ffffff;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
     }
 }
 </style>

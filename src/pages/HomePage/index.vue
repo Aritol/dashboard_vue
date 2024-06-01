@@ -10,7 +10,7 @@
                     інструментів, які дозволять вашій компанії досліджувати дані
                     самостійно.
                 </p>
-                <button>Почати</button>
+                <button @click="start">Почати</button>
             </div>
             <div class="bottom_container">
                 <img src="@/assets/images/dashboard_main.png" alt="" />
@@ -21,8 +21,25 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
     name: "HomePage",
+    computed: {
+        ...mapGetters("auth", ["authorized"]),
+        isAuthorized() {
+            return this.authorized;
+        },
+    },
+    methods: {
+        start() {
+            console.log("start");
+            if (this.isAuthorized) {
+                this.$router.push({ name: "newReportPage" });
+            } else {
+                this.$router.push({ name: "loginPage" });
+            }
+        },
+    },
 };
 </script>
 

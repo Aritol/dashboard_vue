@@ -19,7 +19,10 @@
                         v-show="showCropp"
                     />
                 </div>
-                <button @click="savePhotoCropped">Зберегти фото</button>
+                <button @click="savePhotoCropped" :disabled="loading">
+                    <span v-if="!loading">Зберегти фото</span>
+                    <span v-else class="spinner"></span>
+                </button>
             </div>
         </div>
     </div>
@@ -39,6 +42,10 @@ export default {
             type: File,
             default: () => {},
         },
+        loading: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         return {
@@ -47,7 +54,6 @@ export default {
             image: {},
             base64Image: null,
             showCropp: false,
-            loading: false,
         };
     },
     watch: {
@@ -86,7 +92,6 @@ export default {
             });
         },
         savePhotoCropped() {
-            this.loading = true;
             this.$emit("savePhoto", this.destanation);
         },
         close() {
@@ -148,26 +153,14 @@ export default {
 }
 
 .img-container {
-    // max-height: 600px;
     margin: 20px auto;
-    // padding: 20px 0px;
 
     height: 350px; /* Added */
     width: 400px; /* Added */
-    // overflow: hidden; /* Added */
-    // display: flex; /* Added */
-    // text-align: center;
-    // justify-content: center; /* Added */
-    // align-items: center; /* Added */
     img {
         // width: 100%; /* Added */
         display: block;
         max-width: 100%;
-    }
-
-    canvas {
-        // margin: 0 auto;
-        // overflow: hidden;
     }
 }
 
@@ -180,9 +173,38 @@ button {
     color: #ffffff;
     border-radius: 10px;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover {
         background-color: #c03b21;
+    }
+
+    &:disabled {
+        background-color: #c03b21;
+        cursor: not-allowed;
+    }
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    margin: 0px 20px;
+    border: 3px solid #ffffff;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
     }
 }
 </style>

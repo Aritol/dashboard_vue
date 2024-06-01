@@ -197,7 +197,7 @@
                     </div>
                 </div>
                 <div class="column">
-                    <img src="@/assets/images/signup_sideimage.png" alt="" />
+                    <img src="@/assets/images/signup_sideimage2.png" alt="" />
                 </div>
             </div>
         </div>
@@ -580,5 +580,10 @@ export default {
 .api_response_container {
     // position: sticky;
     // height: 100vh;
+}
+
+img {
+    margin-top: 15px;
+    width: 640px;
 }
 </style>

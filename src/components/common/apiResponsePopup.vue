@@ -3,7 +3,10 @@
         <div class="container">
             <div class="wrapper">
                 <div class="header">
-                    <p v-if="showInfo">Інформування</p>
+                    <p v-if="headerText && headerText.length">
+                        {{ headerText }}
+                    </p>
+                    <p v-else-if="showInfo">Інформування</p>
                     <Icon
                         icon="material-symbols:close"
                         width="40px"
@@ -13,8 +16,8 @@
                 </div>
                 <div class="main_content">
                     <div class="response" v-if="successResponse">
-                        <Icon icon="ooui:success" />
-                        <p></p>
+                        <Icon icon="ooui:success" width="75px" color="green" />
+                        <p>{{ responseText }}</p>
                     </div>
                     <div class="response" v-else>
                         <Icon
@@ -42,6 +45,10 @@ export default {
         Icon,
     },
     props: {
+        headerText: {
+            type: String,
+            default: "Помилка",
+        },
         successResponse: {
             type: Boolean,
             default: false,
@@ -49,6 +56,10 @@ export default {
         showInfo: {
             type: Boolean,
             default: true,
+        },
+        responseText: {
+            type: String,
+            default: "Успішно",
         },
         withTimer: {
             type: Boolean,
@@ -103,13 +114,14 @@ export default {
     background-color: black;
     padding: 15px 0px;
     p {
-        flex-grow: 1; /* Расширить текстовый блок на всё доступное пространство */
+        flex-grow: 1;
         text-align: center;
         padding-top: 7px;
         margin-left: 30px;
     }
 
     svg {
+        margin-right: 10px;
         float: right;
         cursor: pointer;
     }

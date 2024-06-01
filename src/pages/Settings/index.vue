@@ -4,26 +4,52 @@
             <div class="wrapper">
                 <div class="column first">
                     <div class="wrap">
-                        <h1 class="center-text">Максим Андреянов</h1>
+                        <h1 class="center-text">
+                            {{ `${userData.firstName} ${userData.lastName}` }}
+                        </h1>
                         <div class="photo_container">
                             <div class="photo">
-                                <img src="/avatar_test.png" alt="" />
-                                <Icon
-                                    icon="material-symbols:delete-outline"
-                                    width="40px"
-                                    color="#888888"
-                                    @click="showConfirmPopup = true"
-                                />
+                                <div
+                                    class="icon_wrap"
+                                    v-if="
+                                        userData.photo && userData.photo.length
+                                    "
+                                >
+                                    <img
+                                        class="__img"
+                                        :src="userData.photo"
+                                        alt=""
+                                    />
+                                    <Icon
+                                        class="delete-icon"
+                                        icon="material-symbols:delete-outline"
+                                        width="50px"
+                                        color="#ffff"
+                                        @click="showConfirmPopup = true"
+                                    />
+                                </div>
+                                <div class="no_photo" v-else>
+                                    <Icon
+                                        icon="carbon:user-avatar-filled"
+                                        width="120px"
+                                        color="#21ACED"
+                                        @mouseover="showSubMenu = true"
+                                    />
+                                    <p>Фото відсутнє</p>
+                                </div>
                                 <photo-editor
                                     v-if="showPhotoEditor"
                                     class="photo_editor"
                                     :src="file"
+                                    :loading="loadingPhotoToServer"
                                     @savePhoto="savePhotoAfterEdit"
                                     @close="showPhotoEditor = false"
                                 />
                             </div>
                             <button @click="$refs.file.click">
-                                Завантажити інше фото
+                                Завантажити{{
+                                    userData.photo ? " інше фото" : " фото"
+                                }}
                             </button>
                             <input
                                 type="file"
@@ -55,11 +81,19 @@
                             <div class="sub_column">
                                 <div class="container">
                                     <p>Ім'я</p>
-                                    <input type="text" />
+                                    <input
+                                        type="text"
+                                        :value="userData.firstName"
+                                        @change="handleFormChange"
+                                    />
                                 </div>
                                 <div class="container">
                                     <p>Email</p>
-                                    <input type="text" />
+                                    <input
+                                        type="text"
+                                        :value="userData.email"
+                                        @change="handleFormChange"
+                                    />
                                 </div>
                                 <div class="container">
                                     <p>Пароль</p>
@@ -70,13 +104,17 @@
                             <div class="sub_column ml-40">
                                 <div class="container">
                                     <p>Прізвище</p>
-                                    <input type="text" />
+                                    <input
+                                        type="text"
+                                        :value="userData.lastName"
+                                        @change="handleFormChange"
+                                    />
                                 </div>
-                                <div class="container">
+                                <div class="container" v-if="false">
                                     <p>Повторіть email</p>
                                     <input type="text" />
                                 </div>
-                                <div class="container">
+                                <div class="container" v-if="false">
                                     <p>Повторіть пароль</p>
                                     <input type="password" />
                                 </div>
@@ -94,15 +132,29 @@
                     @submit="deletePhoto"
                 />
             </div>
+            <div class="api_response_container">
+                <api-response-popup
+                    v-if="showApiResponsePopup"
+                    :headerText="apiResponsePopupData.headerText"
+                    :successResponse="apiResponsePopupData.successResponse"
+                    :showInfo="apiResponsePopupData.showInfo"
+                    :withLoader="apiResponsePopupData.withLoader"
+                    :withTimer="apiResponsePopupData.withTimer"
+                    :responseText="apiResponsePopupData.responseText"
+                    @close="showApiResponsePopup = false"
+                />
+            </div>
         </div>
     </div>
 </template>
 
 <script>
 import { Icon } from "@iconify/vue";
+import { get, isEmpty } from "lodash";
 import PhotoEditor from "@/components/PhotoEditor";
 import { saveImageToServer, deleteImage, getUserData } from "@/helpers/data";
 import ConfirmActionPopup from "@/components/common/confirmActionPopup.vue";
+import ApiResponsePopup from "@/components/common/apiResponsePopup.vue";
 
 export default {
     name: "Settings",
@@ -110,6 +162,7 @@ export default {
         Icon,
         PhotoEditor,
         ConfirmActionPopup,
+        ApiResponsePopup,
     },
     data() {
         return {
@@ -121,12 +174,56 @@ export default {
                 lastName: "",
                 email: "",
                 password: "",
+                photo: "",
             },
+            changedData: {},
+            emailModifyed: false,
+            passwordModifyed: false,
             repeatEmail: "",
             repeatPassword: "",
+            loadingPhotoToServer: false,
+            deletePhotoSucces: false,
+            showApiResponsePopup: false,
+            apiResponsePopupData: {
+                headerText: "",
+                successResponse: false,
+                showInfo: false,
+                withLoader: true,
+                withTimer: true,
+                responseText: "",
+            },
         };
     },
+    watch: {
+        "userData.email": {
+            deep: true,
+            handler() {
+                this.emailModifyed = true;
+            },
+        },
+        "userData.password": {
+            deep: true,
+            handler() {
+                this.passwordModifyed = true;
+            },
+        },
+    },
     methods: {
+        clearApiResponsePopupData() {
+            this.apiResponsePopupData = {
+                headerText: "",
+                successResponse: false,
+                showInfo: false,
+                withLoader: true,
+                withTimer: true,
+                responseText: "",
+            };
+        },
+        handleFormChange(fieldName, value) {
+            if (value !== this.userData[fieldName]) {
+                this.changedData[fieldName] = value;
+            }
+        },
         fileLoaded(event) {
             const inputedFile = event.target.files[0];
             if (inputedFile) {
@@ -138,59 +235,94 @@ export default {
             if (photo) {
                 const formData = new FormData();
                 formData.append("file", photo);
-                // formData.append("userId", userId);
+                this.loadingPhotoToServer = true;
                 saveImageToServer(formData)
                     .then((response) => {
-                        console.log("response");
-                        console.log(response);
                         if (
                             response &&
                             response.data &&
                             response.data.uploadSuccess
                         ) {
                             this.showPhotoEditor = false;
+                            this.apiResponsePopupData = {
+                                headerText: "Збереження фото",
+                                successResponse: true,
+                                showInfo: true,
+                                withLoader: true,
+                                withTimer: true,
+                                responseText: "Фото збережено успішно",
+                            };
+                            this.showApiResponsePopup = true;
+                            this.getUserData();
                         }
                     })
                     .catch((err) => {
-                        console.error(err);
+                        console.error("savePhotoAfterEdit --->", err);
+                    })
+                    .finally(() => {
                         this.showPhotoEditor = false;
+                        this.loadingPhotoToServer = false;
+                        setTimeout(() => {
+                            this.clearApiResponsePopupData();
+                        }, 3000);
                     });
             }
         },
         deletePhoto() {
             deleteImage()
                 .then((response) => {
-                    if (
-                        response &&
-                        response.data &&
-                        response.data.uploadSuccess
-                    ) {
-                        this.showConfirmPopup = false;
+                    this.showApiResponsePopup = true;
+                    if (response && response.data && response.data.success) {
+                        this.deletePhotoSucces = true;
+                        this.apiResponsePopupData = {
+                            headerText: "Видалення фотографії",
+                            successResponse: true,
+                            showInfo: false,
+                            withLoader: true,
+                            withTimer: true,
+                            responseText: "Фото видалено успішно",
+                        };
+
+                        this.getUserData();
+                    } else {
+                        this.apiResponsePopupData = {
+                            headerText: "Видалення фотографії",
+                            successResponse: false,
+                            showInfo: false,
+                            withLoader: true,
+                            withTimer: true,
+                        };
                     }
+                    this.showApiResponsePopup = true;
                 })
                 .catch((err) => {
-                    console.error(err);
-                    this.showConfirmPopup = false;
+                    console.error("deleteImage --->", err);
+                    this.apiResponsePopupData = {
+                        headerText: "Видалення фотографії",
+                        successResponse: false,
+                        showInfo: false,
+                        withLoader: true,
+                        withTimer: true,
+                    };
+                    this.showApiResponsePopup = true;
+                })
+                .finally(() => {
+                    setTimeout(() => {
+                        this.clearApiResponsePopupData();
+                    }, 3000);
                 });
         },
         getUserData() {
-            console.log("here 2");
+            this.deletePhotoSucces = false;
             getUserData()
-                .then((response) => {
-                    console.log("response");
-                    console.log(response);
-                    // if (
-                    //     response &&
-                    //     response.data &&
-                    //     response.data.uploadSuccess
-                    // ) {
-                    //     this.showConfirmPopup = false;
-                    // }
+                .then((resp) => {
+                    const response = get(resp.data, "userData", {}) || {};
+                    if (response && !isEmpty(response)) {
+                        this.userData = response;
+                    }
                 })
                 .catch((err) => {
-                    console.log(" here err ---------");
-                    console.error(err);
-                    // this.showConfirmPopup = false;
+                    console.error("getUserData --->", err);
                 });
         },
     },
@@ -229,7 +361,7 @@ export default {
 .first {
     padding: 50px;
     max-width: 430px;
-    max-height: 500px;
+    // max-height: 1000px;
 }
 .wrap {
     // max-width: 500px;
@@ -244,21 +376,77 @@ export default {
 
 .photo_container {
     margin-top: 20px;
-    .photo {
-        width: 150px;
-        height: 150px;
-        border-radius: 20px;
-        margin: 0 auto;
+    .icon_wrap {
+        position: relative;
         overflow: hidden;
-        border: 2px solid #000;
         img {
-            // width: 100%;
-            // height: 100%;
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+            cursor: pointer;
+        }
+        transition: all 0.3s ease;
+        &:hover {
+            filter: brightness(0.4);
+            .delete-icon {
+                opacity: 10;
+            }
         }
         svg {
             float: right;
             cursor: pointer;
         }
+        .delete-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        //     .delete-icon {
+        //         z-index: 100;
+        //         opacity: 1;
+        //     }
+        //     .__img {
+        //         width: 100%;
+        //         height: 100%;
+        //         object-fit: cover;
+        //         cursor: pointer;
+        //     }
+        // }
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .no_photo {
+        border: 2px solid #000;
+        border-radius: 20px;
+
+        cursor: pointer;
+        p {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+    }
+    .photo {
+        max-width: 200px;
+        max-height: 200px;
+        margin: 0 auto;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        // &:hover {
+        //     .__img {
+        //         filter: brightness(0.4);
+        //     }
+
+        //     .delete-icon {
+        //         z-index: 100;
+        //         opacity: 1;
+        //     }
+        // }
     }
 
     text-align: center;
