@@ -12,7 +12,7 @@
                     <p>самостійно</p>
                 </div>
             </div> -->
-            <div class="item" @click="openFileDialog" v-if="false">
+            <div class="item" @click="openFileDialog" v-if="!fileLoaded">
                 <Icon
                     icon="material-symbols:upload"
                     color="#888888"
@@ -28,16 +28,23 @@
                     @change="handleFileChange"
                     style="display: none"
                 />
+                <div class="error_container" v-if="fileLoadError">
+                    <api-response-popup
+                        :successResponse="false"
+                        :responseText="'При завантаженні файлу виникла помилка'"
+                        :withTimer="true"
+                    />
+                </div>
             </div>
         </div>
-        <div class="step_two">
+        <div class="step_two" v-if="fileLoaded">
             <div class="header">
                 <h1>Оберіть тип графіку для відображення</h1>
             </div>
             <div class="graphics_container">
                 <h1>Типи графіків</h1>
                 <div class="graphics_container_wrapper">
-                    <div class="row">
+                    <div class="row" @click="selectDiagramType('gistogram')">
                         <div class="graphic">
                             <div class="img_container">
                                 <img
@@ -48,7 +55,10 @@
                             <p>Гістограма</p>
                         </div>
                     </div>
-                    <div class="row">
+                    <div
+                        class="row"
+                        @click="selectDiagramType('circleDiagram')"
+                    >
                         <div class="graphic">
                             <div class="img_container">
                                 <img
@@ -61,7 +71,10 @@
                             <p>Кругова діаграма</p>
                         </div>
                     </div>
-                    <div class="row">
+                    <div
+                        class="row"
+                        @click="selectDiagramType('linearDiagram')"
+                    >
                         <div class="graphic">
                             <div class="img_container">
                                 <img
@@ -82,21 +95,53 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import { mapActions } from "vuex";
+import ApiResponsePopup from "@/components/common/apiResponsePopup.vue";
 
 export default {
     name: "NewReport",
     components: {
         Icon,
+        ApiResponsePopup,
     },
+    data() {
+        return {
+            fileLoaded: false,
+            fileLoadError: false,
+        };
+    },
+
     methods: {
+        ...mapActions("charts", ["setChartDataAction"]),
         openFileDialog() {
             this.$refs.fileInput.click();
         },
         handleFileChange(event) {
+            this.fileLoadError = false;
             const file = event.target.files[0];
             if (file) {
-                // Handle the selected file
-                console.log(file);
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const chartData = JSON.parse(e.target.result);
+                        console.log("chartData");
+                        this.fileLoaded = true;
+                        console.log(chartData);
+                        this.setChartDataAction(chartData);
+                    } catch (error) {
+                        console.error("Error parsing JSON:", error);
+                        alert("Invalid JSON file.");
+                        this.fileLoadError = true;
+                    }
+                };
+                reader.readAsText(file);
+            } else {
+                this.fileLoadError = true;
+            }
+        },
+        selectDiagramType(diagramType = "") {
+            if (diagramType && diagramType.length) {
+                this.$router.push({ name: diagramType });
             }
         },
     },

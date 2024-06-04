@@ -65,10 +65,6 @@ export default {
             type: Boolean,
             default: false,
         },
-        text: {
-            type: String,
-            default: "Успішно",
-        },
     },
     methods: {
         close() {

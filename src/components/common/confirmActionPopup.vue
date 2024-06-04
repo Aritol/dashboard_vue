@@ -87,7 +87,7 @@ export default {
         },
         loading: {
             type: Boolean,
-            default: true,
+            default: false,
         },
         withLoader: {
             type: Boolean,
@@ -169,6 +169,7 @@ export default {
     .confirm_btn {
         background-color: black;
         color: #ffff;
+        border: 2px solid black;
 
         &:hover {
             background-color: rgb(73, 72, 72);
@@ -176,8 +177,9 @@ export default {
     }
 
     .cancel_btn {
-        border: 2px solid black;
         background-color: transparent;
+        border: 2px solid black;
+        margin-left: 15px;
         &:hover {
             background-color: black;
             color: #ffff;

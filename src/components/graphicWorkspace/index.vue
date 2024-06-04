@@ -1,14 +1,12 @@
 <template>
     <div>
-        <div class="container">
-            <div class="wrapper"></div>
-        </div>
+        <div class="conrainer"></div>
     </div>
 </template>
 
 <script>
 export default {
-    name: "linearDiagram",
+    name: "graphicsWorkspace",
 };
 </script>
 
