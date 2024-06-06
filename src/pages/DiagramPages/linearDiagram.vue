@@ -71,7 +71,7 @@
                                 height="600"
                             ></canvas>
                         </div>
-                        <div class="graphic_container">
+                        <div class="graphic_container" v-else>
                             <canvas
                                 id="myMainChart"
                                 width="800"
@@ -100,7 +100,6 @@ export default {
         return {
             showExampleChart: true,
             graphicName: "",
-            // graphicNameExample:'example'
             entryKeys: [],
             countKeys: [],
             periodsKeys: [],
@@ -138,8 +137,6 @@ export default {
         normilizeChartData() {
             const chartDataNormalized =
                 this.chartData[this.userSelectedKeys.entryKey];
-            console.log("chartDataNormalized");
-            console.log(chartDataNormalized);
             const periods =
                 chartDataNormalized[this.userSelectedKeys.periodsKey];
 
@@ -150,7 +147,10 @@ export default {
                     ]
                 );
             });
-            this.initChart();
+            this.showExampleChart = false;
+            setTimeout(() => {
+                this.initChart();
+            }, 100);
         },
         countKeySelected(key) {
             this.userSelectedKeys.countsKey = key;
@@ -159,8 +159,6 @@ export default {
             this.userSelectedKeys.periodsKey = key;
         },
         initChart() {
-            console.log("here");
-            this.showExampleChart = false;
             const chartDataNormalized =
                 this.chartData[this.userSelectedKeys.entryKey];
             const labels =
@@ -290,6 +288,7 @@ export default {
     margin-left: 20px;
     padding: 40px 30px;
     background-color: #ffff;
+    max-height: 900px;
 }
 
 .select_container {

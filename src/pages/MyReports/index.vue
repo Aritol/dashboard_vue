@@ -27,7 +27,10 @@
                 <div class="main_container">
                     <div class="add_new">
                         <h1>Додати новий звіт</h1>
-                        <div class="add_new_boxed">
+                        <div
+                            class="add_new_boxed"
+                            @click="$router.push({ name: 'newReportPage' })"
+                        >
                             <div class="wrap">
                                 <Icon
                                     icon="material-symbols:add"

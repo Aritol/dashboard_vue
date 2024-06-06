@@ -307,6 +307,7 @@ export default {
                     this.showApiResponsePopup = true;
                 })
                 .finally(() => {
+                    this.showConfirmPopup = false;
                     setTimeout(() => {
                         this.clearApiResponsePopupData();
                     }, 3000);

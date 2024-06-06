@@ -36,9 +36,9 @@ const routes = [
         name: "gistogram",
     },
     {
-        path: "/deletedReports",
+        path: "/myReports",
         component: MyReportsPage,
-        name: "deletedReports",
+        name: "myReportsPage",
     },
     { path: "/settings", component: SettingsPage, name: "settingsPage" },
     { path: "/partners", component: PartnersPage, name: "partnersPage" },
