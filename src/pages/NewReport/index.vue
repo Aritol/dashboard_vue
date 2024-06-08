@@ -95,6 +95,7 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import * as XLSX from "xlsx";
 import { mapActions } from "vuex";
 import ApiResponsePopup from "@/components/common/apiResponsePopup.vue";
 
@@ -112,33 +113,90 @@ export default {
     },
 
     methods: {
-        ...mapActions("charts", ["setChartDataAction"]),
+        ...mapActions("charts", ["setChartDataAction", "setFileTypeAction"]),
         openFileDialog() {
             this.$refs.fileInput.click();
         },
         handleFileChange(event) {
             this.fileLoadError = false;
             const file = event.target.files[0];
+            const fileType = file.name.split(".").pop().toLowerCase();
             if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const chartData = JSON.parse(e.target.result);
-                        console.log("chartData");
-                        this.fileLoaded = true;
-                        console.log(chartData);
-                        this.setChartDataAction(chartData);
-                    } catch (error) {
-                        console.error("Error parsing JSON:", error);
-                        alert("Invalid JSON file.");
-                        this.fileLoadError = true;
-                    }
-                };
-                reader.readAsText(file);
-            } else {
-                this.fileLoadError = true;
+                switch (fileType) {
+                    case "json":
+                        this.readJsonFile(file);
+                        break;
+                    case "xlsx":
+                        this.readExcelFile(file);
+                        break;
+                    case "db":
+                        this.readDbFile(file);
+                        break;
+                    default:
+                        alert("Unsupported file type");
+                }
             }
         },
+        readJsonFile(file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const chartData = JSON.parse(event.target.result);
+                    this.setFileTypeAction("json");
+                    this.setChartDataAction(chartData);
+                    this.fileLoaded = true;
+                } catch (error) {
+                    console.error("Error parsing JSON:", error);
+                    this.fileLoadError = true;
+                }
+            };
+            reader.readAsText(file);
+        },
+        readExcelFile(file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+                    const excelDataToJson = {};
+                    for (const sheetName in workbook.Sheets) {
+                        // eslint-disable-next-line
+                        if (workbook.Sheets.hasOwnProperty(sheetName)) {
+                            const sheetData = XLSX.utils.sheet_to_json(
+                                workbook.Sheets[sheetName],
+                                {
+                                    header: 1,
+                                    raw: false,
+                                }
+                            );
+                            excelDataToJson[sheetName] = sheetData;
+                        }
+                    }
+                    console.log("excelDataToJson");
+                    console.log(excelDataToJson);
+                    this.setFileTypeAction("xlsx");
+                    this.setChartDataAction(excelDataToJson);
+                    this.fileLoaded = true;
+                } catch (error) {
+                    console.error("Error parsing Excel:", error);
+                    this.fileLoadError = true;
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        },
+        // async readDbFile(file) {
+        //     const reader = new FileReader();
+        //     reader.onload = async (event) => {
+        //         const Uints = new Uint8Array(event.target.result);
+        //         const SQL = await initSqlJs();
+        //         const db = new SQL.Database(Uints);
+        //         const res = db.exec(
+        //             "SELECT name FROM sqlite_master WHERE type='table'"
+        //         );
+        //         this.dbData = res.map((r) => r.values[0][0]).join(", ");
+        //     };
+        //     reader.readAsArrayBuffer(file);
+        // },
         selectDiagramType(diagramType = "") {
             if (diagramType && diagramType.length) {
                 this.$router.push({ name: diagramType });

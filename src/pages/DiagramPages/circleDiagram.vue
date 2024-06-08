@@ -7,20 +7,7 @@
                     <div class="left_column">
                         <div class="first_row">
                             <h1>Оберыть масив даних</h1>
-                            <div class="select_container">
-                                <select name="" id="">
-                                    <!-- <option
-                                        v-for="item in inventory"
-                                        :value="item"
-                                        :key="item"
-                                    >
-                                        {{ item.name }}
-                                    </option> -->
-                                    <option value="">1</option>
-                                    <option value="">2</option>
-                                    <option value="">3</option>
-                                </select>
-                            </div>
+                            <div class="select_container"></div>
                         </div>
                         <div class="second_row"></div>
                     </div>

@@ -2,7 +2,7 @@
     <div>
         <div class="container">
             <div class="wrapper">
-                <canvas width="800" height="600" id="lineChart"> </canvas>
+                <canvas width="800" height="600" id="gistogramChart"> </canvas>
             </div>
         </div>
     </div>
@@ -12,7 +12,8 @@
 import Chart from "chart.js/auto";
 
 export default {
-    name: "LineChart",
+    name: "GistogramChart",
+
     props: {
         labels: {
             type: Array,
@@ -27,11 +28,10 @@ export default {
             default: "",
         },
     },
-
     mounted() {
         const ctx = document.getElementById("lineChart");
         new Chart(ctx, {
-            type: "line",
+            type: "Bar",
             data: {
                 labels: this.labels,
                 datasets: [
@@ -53,7 +53,7 @@ export default {
                     },
                     title: {
                         display: true,
-                        text: "Лінійна діаграма",
+                        text: "Гістограма",
                     },
                 },
             },
@@ -62,9 +62,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.line-chart-container {
-    width: 100%;
-    height: 400px;
-}
-</style>
+<style lang="scss" scoped></style>

@@ -7,9 +7,6 @@
                     @click="dropdownActive = !dropdownActive"
                 >
                     <div class="right_header_item">
-                        <!-- :class="{
-                                dropdown_selected: dropdownImage,
-                            }" -->
                         <p>{{ title }}</p>
                     </div>
                     <Icon
@@ -20,13 +17,6 @@
                             open: dropdownActive,
                         }"
                     />
-                    <!-- <img
-                        src="@/assets/icons/down_arrow_black.png"
-                        alt=""
-                        :class="{
-                            open: dropdownActive,
-                        }"
-                    /> -->
                 </div>
                 <div class="dropdown_list" v-if="dropdownActive">
                     <div
@@ -35,7 +25,15 @@
                         class="dropdown_list_item"
                         @click="onListItemSelected(item)"
                     >
-                        <p>{{ `ключ { ${item} } ` }}</p>
+                        <p v-if="fileType === jsonFileType">
+                            {{ `Ключ { ${item} }` }}
+                        </p>
+                        <p v-else-if="sckipFirstWord">
+                            {{ item }}
+                        </p>
+                        <p v-else>
+                            {{ `Стовпець - "${item}"` }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -45,6 +43,8 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import { FILE_TYPES } from "@/constants/commonConstants";
+
 export default {
     name: "dropdownMenu",
     components: {
@@ -59,11 +59,22 @@ export default {
             type: String,
             default: "Оберіть опцію",
         },
+        fileType: {
+            type: String,
+            default: "",
+        },
+        sckipFirstWord: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         return {
             dropdownActive: false,
             title: "",
+            jsonFileType: FILE_TYPES.FILE_TYPE_JSON,
+            xlsxFileType: FILE_TYPES.FILE_TYPE_XLSX,
+            dbFileType: FILE_TYPES.FILE_TYPE_DB,
         };
     },
     watch: {

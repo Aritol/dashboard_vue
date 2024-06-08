@@ -10,8 +10,17 @@
                                 <h2>Оберіть масив даних</h2>
                                 <div class="enrtypoint_data_container">
                                     <drop-down-menu
+                                        v-if="
+                                            fileType == jsonFileType ||
+                                            fileType == xlsxFileType
+                                        "
                                         class="select"
-                                        :propsTitle="'Оберіть масив даних'"
+                                        :sckipFirstWord="true"
+                                        :propsTitle="
+                                            fileType === jsonFileType
+                                                ? 'Оберіть масив даних'
+                                                : 'Оберіть аркуш'
+                                        "
                                         :items="entryKeys"
                                         @dropDownItemSelected="entryKeySelected"
                                     />
@@ -20,7 +29,7 @@
                                     <input
                                         type="text"
                                         maxlength="20"
-                                        v-model="graphicName"
+                                        v-model="chartName"
                                     />
                                 </div>
                             </div>
@@ -34,8 +43,11 @@
                                 <drop-down-menu
                                     class="select"
                                     :propsTitle="'Оберіть поле'"
-                                    :items="periodsKeys"
-                                    @dropDownItemSelected="periodsKeySelected"
+                                    :items="periodsData"
+                                    :fileType="fileType"
+                                    @dropDownItemSelected="
+                                        periodsSourceSelected
+                                    "
                                 />
                             </div>
                             <div class="selects_data_container">
@@ -45,14 +57,15 @@
                                 <drop-down-menu
                                     class="select"
                                     :propsTitle="'Оберіть поле'"
-                                    :items="countKeys"
-                                    @dropDownItemSelected="countKeySelected"
+                                    :items="countData"
+                                    :fileType="fileType"
+                                    @dropDownItemSelected="countSourceSelected"
                                 />
                             </div>
                             <div class="button_container">
                                 <button
                                     class="apply_button"
-                                    @click="normilizeChartData"
+                                    @click="initLineChart"
                                 >
                                     Застосувати
                                 </button>
@@ -72,11 +85,11 @@
                             ></canvas>
                         </div>
                         <div class="graphic_container" v-else>
-                            <canvas
-                                id="myMainChart"
-                                width="800"
-                                height="600"
-                            ></canvas>
+                            <line-chart
+                                :labels="labels"
+                                :name="chartName"
+                                :chartData="chartDataNormalized"
+                            />
                         </div>
                     </div>
                 </div>
@@ -89,111 +102,138 @@
 import Chart from "chart.js/auto";
 import { isEmpty } from "lodash";
 import DropDownMenu from "@/components/dropdownMenu";
+import LineChart from "@/components/charts/LineChart.vue";
+import { FILE_TYPES } from "@/constants/commonConstants";
 import { mapGetters } from "vuex";
 
 export default {
     name: "linearDiagram",
     components: {
         DropDownMenu,
+        LineChart,
     },
     data() {
         return {
             showExampleChart: true,
-            graphicName: "",
+            // JSON---------------
             entryKeys: [],
-            countKeys: [],
-            periodsKeys: [],
-            userSelectedKeys: {
+            userSelectedKeysJson: {
                 entryKey: "",
                 countsKey: "",
                 periodsKey: "",
             },
+            // XLSX---------------
+            userSelectedColumsXlsx: {
+                entrySheet: "",
+                countColumn: "",
+                periodsColumn: "",
+            },
+            // DB---------------
+            userSelectedColumsDb: {
+                countColumn: "",
+                periodsColumn: "",
+            },
+            // common ---------------
+            countData: [],
+            periodsData: [],
             normilizedChartData: [],
+            labels: [],
+            chartName: "",
+            chartDataNormalized: [],
+            jsonFileType: FILE_TYPES.FILE_TYPE_JSON,
+            xlsxFileType: FILE_TYPES.FILE_TYPE_XLSX,
+            dbFileType: FILE_TYPES.FILE_TYPE_DB,
         };
     },
     computed: {
-        ...mapGetters("charts", ["getChartData"]),
+        ...mapGetters("charts", ["getChartData", "getFileType"]),
         chartData() {
             return this.getChartData || {};
+        },
+        fileType() {
+            return this.getFileType || {};
         },
     },
     methods: {
         initializeEntryKeys() {
-            console.log("here");
             const keys = Object.keys(this.chartData);
             for (let i of keys) {
                 this.entryKeys.push(i);
             }
         },
         entryKeySelected(key) {
-            this.userSelectedKeys.entryKey = key;
-            const keys = Object.keys(this.chartData[key]);
-            for (let i of keys) {
-                this.countKeys.push(i);
-                this.periodsKeys.push(i);
+            this.countData = [];
+            this.periodsData = [];
+            if (this.fileType === this.jsonFileType) {
+                this.userSelectedKeysJson.entryKey = key;
+                const keys = Object.keys(this.chartData[key]);
+                for (let item of keys) {
+                    this.countData.push(item);
+                    this.periodsData.push(item);
+                }
+            } else if (this.fileType === this.xlsxFileType) {
+                this.userSelectedColumsXlsx.entrySheet = key;
+                const columns = this.chartData[key][0];
+                for (let item of columns) {
+                    this.countData.push(item);
+                    this.periodsData.push(item);
+                }
             }
-            this.chartData[key];
         },
-        normilizeChartData() {
-            const chartDataNormalized =
-                this.chartData[this.userSelectedKeys.entryKey];
-            const periods =
-                chartDataNormalized[this.userSelectedKeys.periodsKey];
-
-            periods.forEach((element) => {
-                this.normilizedChartData.push(
-                    chartDataNormalized[this.userSelectedKeys.countsKey][
-                        element
-                    ]
+        initLineChart() {
+            this.chartDataNormalized = [];
+            this.labels = [];
+            if (this.fileType === this.jsonFileType) {
+                const chartDataEntry =
+                    this.chartData[this.userSelectedKeysJson.entryKey];
+                const periods =
+                    chartDataEntry[this.userSelectedKeysJson.periodsKey];
+                periods.forEach((element) => {
+                    this.chartDataNormalized.push(
+                        chartDataEntry[this.userSelectedKeysJson.countsKey][
+                            element
+                        ]
+                    );
+                });
+                this.labels =
+                    chartDataEntry[this.userSelectedKeysJson.periodsKey];
+                this.showExampleChart = false;
+            } else if (this.fileType === this.xlsxFileType) {
+                const chartDataEntry =
+                    this.chartData[this.userSelectedColumsXlsx.entrySheet];
+                const countColumnIndex = chartDataEntry[0].indexOf(
+                    this.userSelectedColumsXlsx.countColumn
                 );
-            });
-            this.showExampleChart = false;
-            setTimeout(() => {
-                this.initChart();
-            }, 100);
+                const periodColumnIndex = chartDataEntry[0].indexOf(
+                    this.userSelectedColumsXlsx.periodsColumn
+                );
+                chartDataEntry.shift();
+                chartDataEntry.forEach((el) => {
+                    this.labels.push(el[periodColumnIndex]);
+                    this.chartDataNormalized.push(el[countColumnIndex]);
+                });
+                this.showExampleChart = false;
+            } else if (this.fileType === this.dbFileType) {
+                console.log("db");
+            }
         },
-        countKeySelected(key) {
-            this.userSelectedKeys.countsKey = key;
+        countSourceSelected(key) {
+            if (this.fileType === this.jsonFileType) {
+                this.userSelectedKeysJson.countsKey = key;
+            } else if (this.fileType === this.xlsxFileType) {
+                this.userSelectedColumsXlsx.countColumn = key;
+            } else if (this.fileType === this.dbFileType) {
+                this.userSelectedColumsDb.countColumn = key;
+            }
         },
-        periodsKeySelected(key) {
-            this.userSelectedKeys.periodsKey = key;
-        },
-        initChart() {
-            const chartDataNormalized =
-                this.chartData[this.userSelectedKeys.entryKey];
-            const labels =
-                chartDataNormalized[this.userSelectedKeys.periodsKey];
-            const ctx = document.getElementById("myMainChart");
-            new Chart(ctx, {
-                type: "line",
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label:
-                                this.graphicName && this.graphicName.length
-                                    ? this.graphicName
-                                    : "Graphic",
-                            data: [...this.normilizedChartData],
-                            borderWidth: 2,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: "top",
-                        },
-                        title: {
-                            display: true,
-                            text: "Лінійна діаграма",
-                        },
-                    },
-                },
-            });
-
-            // this.showExampleChart = false;
+        periodsSourceSelected(key) {
+            if (this.fileType === this.jsonFileType) {
+                this.userSelectedKeysJson.periodsKey = key;
+            } else if (this.fileType === this.xlsxFileType) {
+                this.userSelectedColumsXlsx.periodsColumn = key;
+            } else if (this.fileType === this.dbFileType) {
+                this.userSelectedColumsDb.periodsColumn = key;
+            }
         },
         saveReport() {},
     },
