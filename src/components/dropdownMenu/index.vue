@@ -74,7 +74,7 @@ export default {
             title: "",
             jsonFileType: FILE_TYPES.FILE_TYPE_JSON,
             xlsxFileType: FILE_TYPES.FILE_TYPE_XLSX,
-            dbFileType: FILE_TYPES.FILE_TYPE_DB,
+            csvFileType: FILE_TYPES.FILE_TYPE_CSV,
         };
     },
     watch: {

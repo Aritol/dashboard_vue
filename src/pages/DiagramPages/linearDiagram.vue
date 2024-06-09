@@ -7,7 +7,14 @@
                         <h1>Оберіть дані для візуалізації</h1>
                         <div class="first_row">
                             <div class="select_container">
-                                <h2>Оберіть масив даних</h2>
+                                <h2
+                                    v-if="
+                                        fileType == jsonFileType ||
+                                        fileType == xlsxFileType
+                                    "
+                                >
+                                    Оберіть масив даних
+                                </h2>
                                 <div class="enrtypoint_data_container">
                                     <drop-down-menu
                                         v-if="
@@ -25,7 +32,18 @@
                                         @dropDownItemSelected="entryKeySelected"
                                     />
 
-                                    <p>Назва графіку</p>
+                                    <p
+                                        :class="{
+                                            margin_top:
+                                                fileType == jsonFileType ||
+                                                fileType == xlsxFileType,
+                                            witout_margin:
+                                                fileType == !jsonFileType &&
+                                                fileType == !xlsxFileType,
+                                        }"
+                                    >
+                                        Назва графіку
+                                    </p>
                                     <input
                                         type="text"
                                         maxlength="20"
@@ -36,9 +54,10 @@
                         </div>
                         <div class="second_row">
                             <div class="selects_data_container">
+                                <!-- <p v-if="chartType === linearDiagramChartType"> -->
                                 <p>
-                                    Оберіть поле для "Періоди" (День, місяць,
-                                    рік і тд.)
+                                    Оберіть поле для Х-осі <br />
+                                    (наприклад період: день, місяць, рік і тд.)
                                 </p>
                                 <drop-down-menu
                                     class="select"
@@ -52,7 +71,8 @@
                             </div>
                             <div class="selects_data_container">
                                 <p>
-                                    Оберіть поле для "Кількість" (числовий тип)
+                                    Оберіть поле для Y-осі (числовий тип)<br />(наприклад
+                                    кількість: продажі, виручка)
                                 </p>
                                 <drop-down-menu
                                     class="select"
@@ -86,6 +106,13 @@
                         </div>
                         <div class="graphic_container" v-else>
                             <line-chart
+                                v-if="chartType === linearDiagramChartType"
+                                :labels="labels"
+                                :name="chartName"
+                                :chartData="chartDataNormalized"
+                            />
+                            <gistogram-chart
+                                v-else
                                 :labels="labels"
                                 :name="chartName"
                                 :chartData="chartDataNormalized"
@@ -103,14 +130,19 @@ import Chart from "chart.js/auto";
 import { isEmpty } from "lodash";
 import DropDownMenu from "@/components/dropdownMenu";
 import LineChart from "@/components/charts/LineChart.vue";
+import GistogramChart from "@/components/charts/GistogramChart.vue";
 import { FILE_TYPES } from "@/constants/commonConstants";
 import { mapGetters } from "vuex";
+
+const GISTOGTAM_CHART_TYPE = "gistogram";
+const LINEAR_DIAGRAM_CHART_TYPE = "linearDiagram";
 
 export default {
     name: "linearDiagram",
     components: {
         DropDownMenu,
         LineChart,
+        GistogramChart,
     },
     data() {
         return {
@@ -129,7 +161,7 @@ export default {
                 periodsColumn: "",
             },
             // DB---------------
-            userSelectedColumsDb: {
+            userSelectedColumsCsv: {
                 countColumn: "",
                 periodsColumn: "",
             },
@@ -142,7 +174,10 @@ export default {
             chartDataNormalized: [],
             jsonFileType: FILE_TYPES.FILE_TYPE_JSON,
             xlsxFileType: FILE_TYPES.FILE_TYPE_XLSX,
-            dbFileType: FILE_TYPES.FILE_TYPE_DB,
+            csvFileType: FILE_TYPES.FILE_TYPE_CSV,
+
+            linearDiagramChartType: LINEAR_DIAGRAM_CHART_TYPE,
+            gistogramChartType: GISTOGTAM_CHART_TYPE,
         };
     },
     computed: {
@@ -152,6 +187,11 @@ export default {
         },
         fileType() {
             return this.getFileType || {};
+        },
+        chartType() {
+            return this.$route.name === GISTOGTAM_CHART_TYPE
+                ? GISTOGTAM_CHART_TYPE
+                : LINEAR_DIAGRAM_CHART_TYPE;
         },
     },
     methods: {
@@ -178,9 +218,18 @@ export default {
                     this.countData.push(item);
                     this.periodsData.push(item);
                 }
+            } else if (this.fileType === this.csvFileType) {
+                const columns = this.chartData.headers;
+                for (let item of columns) {
+                    this.countData.push(item);
+                    this.periodsData.push(item);
+                }
             }
         },
         initLineChart() {
+            if (!this.showExampleChart) {
+                this.showExampleChart = true;
+            }
             this.chartDataNormalized = [];
             this.labels = [];
             if (this.fileType === this.jsonFileType) {
@@ -197,7 +246,7 @@ export default {
                 });
                 this.labels =
                     chartDataEntry[this.userSelectedKeysJson.periodsKey];
-                this.showExampleChart = false;
+                // this.showExampleChart = false;
             } else if (this.fileType === this.xlsxFileType) {
                 const chartDataEntry =
                     this.chartData[this.userSelectedColumsXlsx.entrySheet];
@@ -212,18 +261,28 @@ export default {
                     this.labels.push(el[periodColumnIndex]);
                     this.chartDataNormalized.push(el[countColumnIndex]);
                 });
-                this.showExampleChart = false;
-            } else if (this.fileType === this.dbFileType) {
-                console.log("db");
+            } else if (this.fileType === this.csvFileType) {
+                const chartDataEntry = this.chartData.data;
+                chartDataEntry.forEach((el) => {
+                    this.labels.push(
+                        el[this.userSelectedColumsCsv.periodsColumn]
+                    );
+                    this.chartDataNormalized.push(
+                        el[this.userSelectedColumsCsv.countColumn]
+                    );
+                });
             }
+            setTimeout(() => {
+                this.showExampleChart = false;
+            }, 100);
         },
         countSourceSelected(key) {
             if (this.fileType === this.jsonFileType) {
                 this.userSelectedKeysJson.countsKey = key;
             } else if (this.fileType === this.xlsxFileType) {
                 this.userSelectedColumsXlsx.countColumn = key;
-            } else if (this.fileType === this.dbFileType) {
-                this.userSelectedColumsDb.countColumn = key;
+            } else if (this.fileType === this.csvFileType) {
+                this.userSelectedColumsCsv.countColumn = key;
             }
         },
         periodsSourceSelected(key) {
@@ -231,8 +290,8 @@ export default {
                 this.userSelectedKeysJson.periodsKey = key;
             } else if (this.fileType === this.xlsxFileType) {
                 this.userSelectedColumsXlsx.periodsColumn = key;
-            } else if (this.fileType === this.dbFileType) {
-                this.userSelectedColumsDb.periodsColumn = key;
+            } else if (this.fileType === this.csvFileType) {
+                this.userSelectedColumsCsv.periodsColumn = key;
             }
         },
         saveReport() {},
@@ -274,6 +333,10 @@ export default {
                 },
             },
         });
+
+        if (this.fileType === this.csvFileType) {
+            this.entryKeySelected();
+        }
     },
 };
 </script>
@@ -336,6 +399,7 @@ export default {
     h2 {
         font-weight: bold;
         font-size: 24px;
+        margin-bottom: 20px;
     }
     p {
         font-weight: bold;
@@ -349,6 +413,9 @@ export default {
 .selects_data_container {
     margin-top: 20px;
     font-size: 18px;
+    p {
+        line-height: 22px;
+    }
 }
 .button_container {
     text-align: center;
@@ -393,8 +460,11 @@ export default {
 }
 
 .enrtypoint_data_container {
-    p {
+    .margin_top {
         margin-top: 20px;
+    }
+    .witout_margin {
+        margin-top: 0px;
     }
 
     input {

@@ -29,9 +29,9 @@ export default {
         },
     },
     mounted() {
-        const ctx = document.getElementById("lineChart");
+        const ctx = document.getElementById("circleChart");
         new Chart(ctx, {
-            type: "Doughnut",
+            type: "doughnut",
             data: {
                 labels: this.labels,
                 datasets: [
@@ -40,7 +40,8 @@ export default {
                             this.name && this.name.length
                                 ? this.name
                                 : "Приклад",
-                        data: this.chartData,
+                        // data: this.chartData,
+                        data: ["1", "2", "3"],
                         borderWidth: 1,
                     },
                 ],

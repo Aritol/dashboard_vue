@@ -28,10 +28,23 @@ export default {
             default: "",
         },
     },
+    data() {
+        return {
+            chart: null,
+        };
+    },
+    methods: {
+        destroyChart() {
+            if (this.chart) {
+                this.chart.destroy();
+                this.chart = null;
+            }
+        },
+    },
     mounted() {
-        const ctx = document.getElementById("lineChart");
-        new Chart(ctx, {
-            type: "Bar",
+        const ctx = document.getElementById("gistogramChart");
+        this.chart = new Chart(ctx, {
+            type: "bar",
             data: {
                 labels: this.labels,
                 datasets: [
@@ -58,6 +71,9 @@ export default {
                 },
             },
         });
+    },
+    beforeUnmount() {
+        this.destroyChart();
     },
 };
 </script>

@@ -27,10 +27,22 @@ export default {
             default: "",
         },
     },
-
+    data() {
+        return {
+            chart: null, // силка на екземпляр графіка
+        };
+    },
+    methods: {
+        destroyChart() {
+            if (this.chart) {
+                this.chart.destroy();
+                this.chart = null;
+            }
+        },
+    },
     mounted() {
         const ctx = document.getElementById("lineChart");
-        new Chart(ctx, {
+        this.chart = new Chart(ctx, {
             type: "line",
             data: {
                 labels: this.labels,
@@ -58,6 +70,9 @@ export default {
                 },
             },
         });
+    },
+    beforeUnmount() {
+        this.destroyChart();
     },
 };
 </script>

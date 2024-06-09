@@ -95,7 +95,9 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import { FILE_TYPES } from "@/constants/commonConstants";
 import * as XLSX from "xlsx";
+import Papa from "papaparse";
 import { mapActions } from "vuex";
 import ApiResponsePopup from "@/components/common/apiResponsePopup.vue";
 
@@ -123,14 +125,14 @@ export default {
             const fileType = file.name.split(".").pop().toLowerCase();
             if (file) {
                 switch (fileType) {
-                    case "json":
+                    case FILE_TYPES.FILE_TYPE_JSON:
                         this.readJsonFile(file);
                         break;
-                    case "xlsx":
+                    case FILE_TYPES.FILE_TYPE_XLSX:
                         this.readExcelFile(file);
                         break;
-                    case "db":
-                        this.readDbFile(file);
+                    case FILE_TYPES.FILE_TYPE_CSV:
+                        this.readCsvFile(file);
                         break;
                     default:
                         alert("Unsupported file type");
@@ -142,7 +144,7 @@ export default {
             reader.onload = (event) => {
                 try {
                     const chartData = JSON.parse(event.target.result);
-                    this.setFileTypeAction("json");
+                    this.setFileTypeAction(FILE_TYPES.FILE_TYPE_JSON);
                     this.setChartDataAction(chartData);
                     this.fileLoaded = true;
                 } catch (error) {
@@ -172,9 +174,7 @@ export default {
                             excelDataToJson[sheetName] = sheetData;
                         }
                     }
-                    console.log("excelDataToJson");
-                    console.log(excelDataToJson);
-                    this.setFileTypeAction("xlsx");
+                    this.setFileTypeAction(FILE_TYPES.FILE_TYPE_XLSX);
                     this.setChartDataAction(excelDataToJson);
                     this.fileLoaded = true;
                 } catch (error) {
@@ -184,19 +184,28 @@ export default {
             };
             reader.readAsArrayBuffer(file);
         },
-        // async readDbFile(file) {
-        //     const reader = new FileReader();
-        //     reader.onload = async (event) => {
-        //         const Uints = new Uint8Array(event.target.result);
-        //         const SQL = await initSqlJs();
-        //         const db = new SQL.Database(Uints);
-        //         const res = db.exec(
-        //             "SELECT name FROM sqlite_master WHERE type='table'"
-        //         );
-        //         this.dbData = res.map((r) => r.values[0][0]).join(", ");
-        //     };
-        //     reader.readAsArrayBuffer(file);
-        // },
+        readCsvFile(file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const csvData = Papa.parse(event.target.result, {
+                        header: true,
+                        dynamicTyping: true,
+                    });
+                    this.setFileTypeAction(FILE_TYPES.FILE_TYPE_CSV);
+                    const aggrCsvData = {
+                        headers: csvData.meta.fields,
+                        data: csvData.data,
+                    };
+                    this.setChartDataAction(aggrCsvData);
+                    this.fileLoaded = true;
+                } catch (error) {
+                    console.error("Error parsing CSV:", error);
+                    this.fileLoadError = true;
+                }
+            };
+            reader.readAsText(file);
+        },
         selectDiagramType(diagramType = "") {
             if (diagramType && diagramType.length) {
                 this.$router.push({ name: diagramType });
