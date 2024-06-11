@@ -6,4 +6,10 @@ export default {
         deleteImage: `${process.env.VUE_APP_API_URL}/users/deleteImage`,
         getUserData: `${process.env.VUE_APP_API_URL}/users/getUserData`,
     },
+    admin: {
+        callBack: `${process.env.VUE_APP_API_URL}/admin/callBack`,
+    },
+    reports: {
+        saveReport: `${process.env.VUE_APP_API_URL}/reports/saveReport`,
+    },
 };

@@ -14,7 +14,11 @@
             @mouseleave="showSubMenu = false"
         >
             <div class="img_container">
-                <img src="" alt="" v-if="profile" />
+                <img
+                    :src="userAvatar"
+                    alt=""
+                    v-if="isAuthorized && userAvatar && userAvatar.length"
+                />
                 <div v-else>
                     <Icon
                         icon="carbon:user-avatar-filled"
@@ -24,8 +28,11 @@
                     />
                 </div>
             </div>
-            <div class="info_container" v-if="isAuthorized">
-                <p>{{}}</p>
+            <div
+                class="info_container"
+                v-if="isAuthorized && userName && userName.length"
+            >
+                <p>{{ userName }}</p>
             </div>
             <div class="buttons_container">
                 <div
@@ -76,6 +83,8 @@
 <script>
 import { Icon } from "@iconify/vue";
 import { mapActions, mapGetters } from "vuex";
+import { get } from "lodash";
+import { getUserData } from "@/helpers/data";
 
 export default {
     name: "avatar",
@@ -86,6 +95,8 @@ export default {
         return {
             showSubMenu: false,
             profile: false,
+            userName: "",
+            userAvatar: "",
         };
     },
     computed: {
@@ -94,11 +105,45 @@ export default {
             return this.authorized;
         },
     },
+    watch: {
+        "$route.name": {
+            deep: true,
+            handler(value) {
+                if (value) {
+                    if (this.isAuthorized) {
+                        this.getUserData();
+                    }
+                }
+            },
+        },
+    },
     methods: {
         ...mapActions("auth", ["logout"]),
         logoutUser() {
             this.logout();
         },
+        getUserData() {
+            getUserData()
+                .then((resp) => {
+                    if (resp && resp.data) {
+                        const firstName =
+                            get(resp.data, "userData.firstName", "") || "";
+                        const secondName =
+                            get(resp.data, "userData.lastName", "") || "";
+                        this.userName = `${firstName} ${secondName}`;
+                        this.userAvatar =
+                            get(resp.data, "userData.photo", "") || "";
+                    }
+                })
+                .catch((err) => {
+                    console.log("getUserData error ---> ", err);
+                });
+        },
+    },
+    mounted() {
+        if (this.isAuthorized) {
+            this.getUserData();
+        }
     },
 };
 </script>
@@ -106,6 +151,7 @@ export default {
 <style lang="scss" scoped>
 .container {
     position: relative;
+    margin-top: 4px;
 }
 
 .top_container {
@@ -136,15 +182,25 @@ export default {
 }
 .img_container {
     margin-top: 10px;
+    text-align: center;
+
+    img {
+        border-radius: 30px;
+        width: 130px;
+    }
     div {
-        text-align: center;
+        // text-align: center;
     }
 }
 
-// .botom_container .img_container,
-// .botom_container .info_container {
-//     /* Стилі для контейнерів зображення та інформації */
-// }
+.info_container {
+    text-align: center;
+    margin-top: 10px;
+    p {
+        margin-right: 0px;
+        font-weight: bold;
+    }
+}
 
 .botom_container .buttons_container {
     display: flex;

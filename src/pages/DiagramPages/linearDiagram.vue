@@ -54,9 +54,12 @@
                         </div>
                         <div class="second_row">
                             <div class="selects_data_container">
-                                <!-- <p v-if="chartType === linearDiagramChartType"> -->
-                                <p>
+                                <p v-if="fileType === jsonFileType">
                                     Оберіть поле для Х-осі <br />
+                                    (наприклад період: день, місяць, рік і тд.)
+                                </p>
+                                <p v-else>
+                                    Оберіть стовпець для Х-осі <br />
                                     (наприклад період: день, місяць, рік і тд.)
                                 </p>
                                 <drop-down-menu
@@ -70,7 +73,11 @@
                                 />
                             </div>
                             <div class="selects_data_container">
-                                <p>
+                                <p v-if="fileType === jsonFileType">
+                                    Оберіть поле для Y-осі (числовий тип)<br />(наприклад
+                                    кількість: продажі, виручка)
+                                </p>
+                                <p v-else>
                                     Оберіть поле для Y-осі (числовий тип)<br />(наприклад
                                     кількість: продажі, виручка)
                                 </p>
@@ -82,6 +89,7 @@
                                     @dropDownItemSelected="countSourceSelected"
                                 />
                             </div>
+
                             <div class="button_container">
                                 <button
                                     class="apply_button"
@@ -246,7 +254,6 @@ export default {
                 });
                 this.labels =
                     chartDataEntry[this.userSelectedKeysJson.periodsKey];
-                // this.showExampleChart = false;
             } else if (this.fileType === this.xlsxFileType) {
                 const chartDataEntry =
                     this.chartData[this.userSelectedColumsXlsx.entrySheet];
@@ -315,7 +322,6 @@ export default {
                 datasets: [
                     {
                         label: "Example",
-                        // data: [12, 19, 3, 5, 2, 3],
                         borderWidth: 1,
                     },
                 ],
@@ -365,9 +371,6 @@ export default {
     justify-content: space-between;
 }
 .left_column {
-    // background-color: #ffff;
-    // padding: 40px 50px;
-    // max-width: 300px;
     width: 100%;
     h1 {
         color: #ffff;
@@ -431,7 +434,6 @@ export default {
 
     .apply_button {
         margin: 0 auto;
-        // button {
         color: #166ba0;
         background-color: transparent;
         border: solid 2px #166ba0;
@@ -441,7 +443,6 @@ export default {
             color: #ffff;
             background-color: #166ba0;
         }
-        // }
     }
 
     .save_button {

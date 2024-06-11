@@ -57,15 +57,16 @@
                                 <p v-if="fileType === jsonFileType">
                                     Оберіть поле для категорій
                                 </p>
-                                <p v-else>Оберіть стовпець для категорій</p>
+                                <p v-else>
+                                    Оберіть стовпець для групування (наприклад:
+                                    категорія)
+                                </p>
                                 <drop-down-menu
                                     class="select"
                                     :propsTitle="'Оберіть поле'"
-                                    :items="periodsData"
+                                    :items="keysToGroupData"
                                     :fileType="fileType"
-                                    @dropDownItemSelected="
-                                        periodsSourceSelected
-                                    "
+                                    @dropDownItemSelected="groupSourceSelected"
                                 />
                             </div>
                             <div class="selects_data_container">
@@ -91,7 +92,10 @@
                                 >
                                     Застосувати
                                 </button>
-                                <button class="save_button" @click="saveReport">
+                                <button
+                                    class="save_button"
+                                    @click="saveReportPopup = true"
+                                >
                                     Зберегти звіт
                                 </button>
                             </div>
@@ -117,6 +121,16 @@
                 </div>
             </div>
         </div>
+        <div class="save_report_cotainer" v-if="saveReportPopup">
+            <save-report
+                :showResponsePopup="showResponsePopup"
+                :responseStatus="responseStatus"
+                :responseText="responseText"
+                @close="saveReportPopup = false"
+                @closeResponsePopup="showResponsePopup = false"
+                @saveReport="saveReport"
+            />
+        </div>
     </div>
 </template>
 
@@ -125,13 +139,16 @@ import Chart from "chart.js/auto";
 import { isEmpty } from "lodash";
 import DropDownMenu from "@/components/dropdownMenu";
 import CircleChart from "@/components/charts/CircleChart.vue";
+import SaveReport from "./components/saveReport.vue";
 import { FILE_TYPES } from "@/constants/commonConstants";
+import { saveReport } from "@/helpers/data";
 import { mapGetters } from "vuex";
 export default {
     name: "circleDiagram",
     components: {
         DropDownMenu,
         CircleChart,
+        SaveReport,
     },
     data() {
         return {
@@ -141,22 +158,22 @@ export default {
             userSelectedKeysJson: {
                 entryKey: "",
                 countsKey: "",
-                periodsKey: "",
+                groupKey: "",
             },
             // XLSX---------------
             userSelectedColumsXlsx: {
                 entrySheet: "",
                 countColumn: "",
-                periodsColumn: "",
+                groupKey: "",
             },
             // DB---------------
             userSelectedColumsCsv: {
                 countColumn: "",
-                periodsColumn: "",
+                groupKey: "",
             },
             // common ---------------
             countData: [],
-            periodsData: [],
+            keysToGroupData: [],
             normilizedChartData: [],
             labels: [],
             chartName: "",
@@ -164,6 +181,8 @@ export default {
             jsonFileType: FILE_TYPES.FILE_TYPE_JSON,
             xlsxFileType: FILE_TYPES.FILE_TYPE_XLSX,
             csvFileType: FILE_TYPES.FILE_TYPE_CSV,
+
+            saveReportPopup: false,
         };
     },
     computed: {
@@ -184,26 +203,27 @@ export default {
         },
         entryKeySelected(key) {
             this.countData = [];
-            this.periodsData = [];
+            this.keysToGroupData = [];
             if (this.fileType === this.jsonFileType) {
                 this.userSelectedKeysJson.entryKey = key;
-                const keys = Object.keys(this.chartData[key]);
+                const keys = Object.keys(this.chartData[key][0]);
+
                 for (let item of keys) {
                     this.countData.push(item);
-                    this.periodsData.push(item);
+                    this.keysToGroupData.push(item);
                 }
             } else if (this.fileType === this.xlsxFileType) {
                 this.userSelectedColumsXlsx.entrySheet = key;
                 const columns = this.chartData[key][0];
                 for (let item of columns) {
                     this.countData.push(item);
-                    this.periodsData.push(item);
+                    this.keysToGroupData.push(item);
                 }
             } else if (this.fileType === this.csvFileType) {
                 const columns = this.chartData.headers;
                 for (let item of columns) {
                     this.countData.push(item);
-                    this.periodsData.push(item);
+                    this.keysToGroupData.push(item);
                 }
             }
         },
@@ -216,41 +236,76 @@ export default {
             if (this.fileType === this.jsonFileType) {
                 const chartDataEntry =
                     this.chartData[this.userSelectedKeysJson.entryKey];
-                const periods =
-                    chartDataEntry[this.userSelectedKeysJson.periodsKey];
-                periods.forEach((element) => {
-                    this.chartDataNormalized.push(
-                        chartDataEntry[this.userSelectedKeysJson.countsKey][
-                            element
-                        ]
-                    );
+                const keysToGroup = [];
+                chartDataEntry.forEach((el) => {
+                    keysToGroup.push(el[this.userSelectedKeysJson.groupKey]);
                 });
-                this.labels =
-                    chartDataEntry[this.userSelectedKeysJson.periodsKey];
-                // this.showExampleChart = false;
+                const groupedKeys = Array.from(new Set(keysToGroup));
+
+                this.labels = groupedKeys;
+                groupedKeys.forEach((firstLevelElement) => {
+                    let sum = 0;
+                    chartDataEntry.forEach((secondLevelElement) => {
+                        if (
+                            secondLevelElement[
+                                this.userSelectedKeysJson.groupKey
+                            ] == firstLevelElement
+                        ) {
+                            sum +=
+                                +secondLevelElement[
+                                    this.userSelectedKeysJson.countsKey
+                                ];
+                        }
+                    });
+                    this.chartDataNormalized.push(sum);
+                });
             } else if (this.fileType === this.xlsxFileType) {
                 const chartDataEntry =
                     this.chartData[this.userSelectedColumsXlsx.entrySheet];
+
                 const countColumnIndex = chartDataEntry[0].indexOf(
                     this.userSelectedColumsXlsx.countColumn
                 );
-                const periodColumnIndex = chartDataEntry[0].indexOf(
-                    this.userSelectedColumsXlsx.periodsColumn
+                const groupkeyColumnIndex = chartDataEntry[0].indexOf(
+                    this.userSelectedColumsXlsx.groupKey
                 );
+
+                const keysToGroup = [];
                 chartDataEntry.shift();
                 chartDataEntry.forEach((el) => {
-                    this.labels.push(el[periodColumnIndex]);
-                    this.chartDataNormalized.push(el[countColumnIndex]);
+                    keysToGroup.push(el[groupkeyColumnIndex]);
+                });
+                const groupedKeys = Array.from(new Set(keysToGroup));
+
+                this.labels = groupedKeys;
+                groupedKeys.forEach((el) => {
+                    let sum = 0;
+                    chartDataEntry.forEach((element) => {
+                        if (element[groupkeyColumnIndex] == el) {
+                            sum += +element[countColumnIndex];
+                        }
+                    });
+                    this.chartDataNormalized.push(sum);
                 });
             } else if (this.fileType === this.csvFileType) {
                 const chartDataEntry = this.chartData.data;
+                const keysToGroup = [];
                 chartDataEntry.forEach((el) => {
-                    this.labels.push(
-                        el[this.userSelectedColumsCsv.periodsColumn]
-                    );
-                    this.chartDataNormalized.push(
-                        el[this.userSelectedColumsCsv.countColumn]
-                    );
+                    keysToGroup.push(el[this.userSelectedColumsCsv.groupKey]);
+                });
+                const groupedKeys = new Set(keysToGroup);
+
+                this.labels = Array.from(groupedKeys);
+                groupedKeys.forEach((grpoupKey) => {
+                    let sum = 0;
+                    chartDataEntry.forEach((el) => {
+                        if (
+                            el[this.userSelectedColumsCsv.groupKey] == grpoupKey
+                        ) {
+                            sum += el[this.userSelectedColumsCsv.countColumn];
+                        }
+                    });
+                    this.chartDataNormalized.push(sum);
                 });
             }
             setTimeout(() => {
@@ -266,16 +321,24 @@ export default {
                 this.userSelectedColumsCsv.countColumn = key;
             }
         },
-        periodsSourceSelected(key) {
+        groupSourceSelected(key) {
             if (this.fileType === this.jsonFileType) {
-                this.userSelectedKeysJson.periodsKey = key;
+                this.userSelectedKeysJson.groupKey = key;
             } else if (this.fileType === this.xlsxFileType) {
-                this.userSelectedColumsXlsx.periodsColumn = key;
+                this.userSelectedColumsXlsx.groupKey = key;
             } else if (this.fileType === this.csvFileType) {
-                this.userSelectedColumsCsv.periodsColumn = key;
+                this.userSelectedColumsCsv.groupKey = key;
             }
         },
-        saveReport() {},
+        saveReport(reportName) {
+            console.log("reportName");
+            console.log(reportName);
+            saveReport()
+                .then()
+                .catch((err) => {
+                    console.log("saveReport error -->", err);
+                });
+        },
     },
     mounted() {
         if (!isEmpty(this.chartData)) {
@@ -327,7 +390,6 @@ export default {
     font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
     background-color: #c4c4c4;
     width: 100%;
-    height: 100vh;
     display: flex;
     justify-content: center;
 }
@@ -335,6 +397,7 @@ export default {
 .wrapper {
     max-width: 1240px;
     margin-top: 50px;
+    margin-bottom: 50px;
 }
 
 .header {
@@ -346,9 +409,6 @@ export default {
     justify-content: space-between;
 }
 .left_column {
-    // background-color: #ffff;
-    // padding: 40px 50px;
-    // max-width: 300px;
     width: 100%;
     h1 {
         color: #ffff;
@@ -422,7 +482,6 @@ export default {
             color: #ffff;
             background-color: #166ba0;
         }
-        // }
     }
 
     .save_button {

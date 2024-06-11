@@ -11,14 +11,10 @@ axios.defaults.headers["Access-Control-Allow-Origin"] = "*";
 
 axios.interceptors.request.use((config) => {
     const isAuthenticated = store.getters["auth/authorized"];
-    console.log("isAuthenticated");
-    console.log(isAuthenticated);
     if (isAuthenticated) {
         config.headers["Authorization"] =
             "Bearer " + store.getters["auth/getAccessToken"]();
         const userId = store.getters["auth/getUserId"];
-        console.log("userId");
-        console.log(userId);
         config.headers["user_id"] = userId;
         // const expiresAt = store.getters["auth/getExpiresAt"];
         // config.withCredentials = true;

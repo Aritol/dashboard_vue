@@ -81,7 +81,6 @@ export default {
                 .then((resp) => {
                     if (resp && resp.data && resp.data.user) {
                         this.setAuthData(resp.data.user);
-                        console.log("here");
                         this.$router.push({ name: "homePage" });
                     } else {
                         this.loginError = true;

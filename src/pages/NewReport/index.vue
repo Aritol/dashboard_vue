@@ -197,6 +197,7 @@ export default {
                         headers: csvData.meta.fields,
                         data: csvData.data,
                     };
+                    aggrCsvData.data.pop();
                     this.setChartDataAction(aggrCsvData);
                     this.fileLoaded = true;
                 } catch (error) {

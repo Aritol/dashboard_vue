@@ -161,41 +161,6 @@
                         </form>
                     </div>
                 </div>
-                <div class="column" v-if="false">
-                    <div class="top_content">
-                        <h1>Створіть ваш особистий профіль</h1>
-                        <p>
-                            Все що вам потрібно для аналізу данних в одному
-                            місці за 5-хвилин
-                        </p>
-                    </div>
-                    <div class="confirm_registration">
-                        <h1>Підтвердіть реєстрацію</h1>
-                        <p>
-                            Введіть чотирьохзначний код, який прийшов вам на
-                            пошту
-                        </p>
-                        <span>{{ form.email }}</span>
-                        <input
-                            class="input"
-                            type="number"
-                            v-model="confirmCode"
-                            placeholder="Введіть код"
-                            minlength="4"
-                            :class="{ 'error-input': confirmCodeError }"
-                            @focusout="validateConfirmCode()"
-                        />
-                        <button
-                            :disabled="
-                                confirmCode === null ||
-                                (!confirmCode &&
-                                    confirmCode.length !== confirmCodeLength)
-                            "
-                        >
-                            Підтвердити
-                        </button>
-                    </div>
-                </div>
                 <div class="column">
                     <img src="@/assets/images/signup_sideimage2.png" alt="" />
                 </div>
@@ -267,7 +232,6 @@ export default {
             handler() {
                 if (this.passwordError) {
                     this.passwordError = false;
-                    // this.passwordMissMatchError = false;
                 }
             },
         },
@@ -575,11 +539,6 @@ export default {
 }
 .error-input {
     border: 2px solid #e83b46 !important;
-}
-
-.api_response_container {
-    // position: sticky;
-    // height: 100vh;
 }
 
 img {

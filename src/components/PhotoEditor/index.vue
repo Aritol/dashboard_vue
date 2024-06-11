@@ -64,10 +64,6 @@ export default {
                     const reader = new FileReader();
                     reader.onload = () => {
                         this.base64Image = reader.result;
-                        // this.showCropp = true;
-                        // setTimeout(() => {
-                        // this.initCropper();
-                        // }, 1000);
                     };
                     reader.readAsDataURL(photo);
                 }

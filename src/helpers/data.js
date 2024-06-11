@@ -16,3 +16,10 @@ export function deleteImage() {
 export function getUserData() {
     return axios.get(apiEndpoints.user.getUserData);
 }
+export function callBackOrder(params = {}) {
+    return axios.post(apiEndpoints.admin.callBack, params);
+}
+
+export function saveReport(params = {}) {
+    return axios.post(apiEndpoints.reports.saveReport, params);
+}

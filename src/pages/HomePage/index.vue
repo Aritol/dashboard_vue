@@ -32,7 +32,6 @@ export default {
     },
     methods: {
         start() {
-            console.log("start");
             if (this.isAuthorized) {
                 this.$router.push({ name: "newReportPage" });
             } else {

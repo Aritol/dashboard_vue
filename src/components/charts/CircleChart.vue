@@ -40,8 +40,7 @@ export default {
                             this.name && this.name.length
                                 ? this.name
                                 : "Приклад",
-                        // data: this.chartData,
-                        data: ["1", "2", "3"],
+                        data: this.chartData,
                         borderWidth: 1,
                     },
                 ],
@@ -55,6 +54,13 @@ export default {
                     title: {
                         display: true,
                         text: "Кругова діаграма",
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.parsed;
+                            },
+                        },
                     },
                 },
             },
