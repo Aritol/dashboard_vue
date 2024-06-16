@@ -11,5 +11,6 @@ export default {
     },
     reports: {
         saveReport: `${process.env.VUE_APP_API_URL}/reports/saveReport`,
+        getUserReports: `${process.env.VUE_APP_API_URL}/reports/getUserReports`,
     },
 };

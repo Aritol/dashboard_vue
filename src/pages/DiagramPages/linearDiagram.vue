@@ -360,6 +360,7 @@ export default {
 .wrapper {
     max-width: 1240px;
     margin-top: 50px;
+    margin-bottom: 1100px;
 }
 
 .header {

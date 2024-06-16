@@ -37,10 +37,12 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import ApiResponsePopup from "@/components/common/apiResponsePopup.vue";
 export default {
     name: "saveReport",
     components: {
         Icon,
+        ApiResponsePopup,
     },
     props: {
         showResponsePopup: {

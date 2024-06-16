@@ -68,6 +68,13 @@ export default {
                         display: true,
                         text: "Гістограма",
                     },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.parsed;
+                            },
+                        },
+                    },
                 },
             },
         });

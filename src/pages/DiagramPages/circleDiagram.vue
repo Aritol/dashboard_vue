@@ -136,7 +136,9 @@
 
 <script>
 import Chart from "chart.js/auto";
-import { isEmpty } from "lodash";
+import { get, isEmpty } from "lodash";
+import { format } from "date-fns";
+import { getUserData } from "@/helpers/data";
 import DropDownMenu from "@/components/dropdownMenu";
 import CircleChart from "@/components/charts/CircleChart.vue";
 import SaveReport from "./components/saveReport.vue";
@@ -183,12 +185,17 @@ export default {
             csvFileType: FILE_TYPES.FILE_TYPE_CSV,
 
             saveReportPopup: false,
+            userName: "",
         };
     },
     computed: {
         ...mapGetters("charts", ["getChartData", "getFileType"]),
+        ...mapGetters("auth", ["getUserId"]),
         chartData() {
             return this.getChartData || {};
+        },
+        userId() {
+            return this.getUserId || 0;
         },
         fileType() {
             return this.getFileType || {};
@@ -331,16 +338,61 @@ export default {
             }
         },
         saveReport(reportName) {
-            console.log("reportName");
-            console.log(reportName);
-            saveReport()
-                .then()
+            this.responseStatus = false;
+            this.responseText = "";
+            const reportParams = {
+                name: reportName || "",
+                userId: this.userId || 0,
+                chartType: "circleDiagram",
+                fileType: this.fileType,
+                owner: this.userName || "",
+                lastViewed: format(new Date(), "yyyy-MM-dd"),
+                countData: this.countData,
+                keysToGroup: this.keysToGroupData,
+                labels: this.labels,
+                chartData: this.chartDataNormalized,
+                data: this.chartData,
+            };
+            if (this.fileType == this.jsonFileType) {
+                reportParams.entryKey = this.userSelectedKeysJson.entryKey;
+            } else if (this.fileType == this.xlsxFileType) {
+                reportParams.entryKey = this.userSelectedColumsXlsx.entrySheet;
+            }
+            saveReport(reportParams)
+                .then((resp) => {
+                    this.showResponsePopup = true;
+                    if (resp && resp.data) {
+                        this.responseStatus = true;
+                        this.responseText = "Звіт збережено успішно";
+                    } else {
+                        this.responseStatus = false;
+                        this.responseText = "Помилка при збереженні";
+                    }
+                })
                 .catch((err) => {
                     console.log("saveReport error -->", err);
+                    this.responseStatus = false;
+                    this.responseText = "Помилка при збереженні";
+                });
+        },
+        getUserData() {
+            getUserData()
+                .then((resp) => {
+                    if (resp && resp.data) {
+                        const firstName =
+                            get(resp.data, "userData.firstName", "") || "";
+                        const secondName =
+                            get(resp.data, "userData.lastName", "") || "";
+                        this.userName = `${firstName} ${secondName}`;
+                    }
+                })
+                .catch((err) => {
+                    console.log("getUserData error ---> ", err);
                 });
         },
     },
     mounted() {
+        this.getUserData();
         if (!isEmpty(this.chartData)) {
             this.initializeEntryKeys();
         }

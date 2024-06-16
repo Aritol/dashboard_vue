@@ -23,3 +23,7 @@ export function callBackOrder(params = {}) {
 export function saveReport(params = {}) {
     return axios.post(apiEndpoints.reports.saveReport, params);
 }
+
+export function getReports(userId = 0) {
+    return axios.get(`${apiEndpoints.reports.getUserReports}/${userId}`);
+}

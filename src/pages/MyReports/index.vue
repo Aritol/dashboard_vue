@@ -4,7 +4,7 @@
             <div class="wrapper">
                 <div class="top_container">
                     <h1>Мої звіти</h1>
-                    <div class="buttons_conatainer">
+                    <!-- <div class="buttons_conatainer">
                         <button
                             :class="{
                                 active: !deletedReportsPage,
@@ -21,7 +21,7 @@
                         >
                             Видалені
                         </button>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="line"></div>
                 <div class="main_container">
@@ -51,8 +51,12 @@
                             <div class="table_header_item">Дата перегляду</div>
                         </div>
                         <div class="line"></div>
-                        <div class="item">
-                            <resports-list-item />
+                        <div
+                            class="item"
+                            v-for="(item, index) in userReports"
+                            :key="index"
+                        >
+                            <resports-list-item :report="item" />
                         </div>
                     </div>
                 </div>
@@ -64,15 +68,28 @@
 <script>
 import resportsListItem from "@/components/reports/reportsListItem.vue";
 import { Icon } from "@iconify/vue";
+import { mapGetters } from "vuex";
+import { getReports } from "@/helpers/data";
+
 export default {
     name: "MyReports",
     components: {
         resportsListItem,
         Icon,
     },
+
+    data() {
+        return {
+            userReports: [],
+        };
+    },
     computed: {
+        ...mapGetters("auth", ["getUserId"]),
         deletedReportsPage() {
             return this.$route.name === "deletedReports" ? true : false;
+        },
+        userId() {
+            return this.getUserId || 0;
         },
     },
     methods: {
@@ -82,6 +99,23 @@ export default {
         toMyReports() {
             this.$router.push({ name: "myReportsPage" });
         },
+        getUserReports() {
+            getReports(this.userId)
+                .then((resp) => {
+                    if (
+                        resp &&
+                        resp.data &&
+                        resp.data.reports &&
+                        resp.data.reports.length
+                    ) {
+                        this.userReports = resp.data.reports;
+                    }
+                })
+                .catch((err) => console.log("getUserReports", err));
+        },
+    },
+    mounted() {
+        this.getUserReports();
     },
 };
 </script>

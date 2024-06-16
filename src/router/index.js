@@ -7,7 +7,6 @@ import SettingsPage from "@/pages/Settings";
 import PartnersPage from "@/pages/landings/partnersPage.vue";
 import linearDiagram from "@/pages/DiagramPages/linearDiagram.vue";
 import circleDiagram from "@/pages/DiagramPages/circleDiagram.vue";
-// import gistogram from "@/pages/DiagramPages/gistogram.vue";
 
 import { createRouter, createWebHashHistory } from "vue-router";
 

@@ -18,8 +18,6 @@ const store = {
             state.expiresAt =
                 expiresAt ||
                 state.authData.expires_in * 1000 + new Date().getTime();
-            // state.expiresAt =
-            // expiresAt || state.authData.expires_in + 10 + new Date().getTime();
             localStorage.setItem("authData", JSON.stringify(state.authData));
             localStorage.setItem("expiresAt", JSON.stringify(state.expiresAt));
         },

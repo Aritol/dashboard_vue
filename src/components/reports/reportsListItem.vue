@@ -8,13 +8,16 @@
                         color="#4285f4"
                         width="30px"
                     />
-                    <p>Звіт без назви</p>
+                    <!-- <p>Звіт_1</p> -->
+                    <p>{{ report.name }}</p>
                 </div>
                 <div class="owner_container">
-                    <p>Андреянов Максим</p>
+                    <!-- <p>Андреянов Максим</p> -->
+                    <p>{{ report.owner }}</p>
                 </div>
                 <div class="last_seen_container">
-                    <p>25 травня 2024 р.</p>
+                    <!-- <p>25 травня 2024 р.</p> -->
+                    <p>{{ formattedDate }}</p>
                     <div class="more_container">
                         <div class="more_button">
                             <Icon
@@ -51,15 +54,27 @@
 
 <script>
 import { Icon } from "@iconify/vue";
+import { format } from "date-fns";
 export default {
     name: "reportsListItem",
     components: {
         Icon,
     },
+    props: {
+        report: {
+            type: Object,
+            default: () => {},
+        },
+    },
     data() {
         return {
             showOptions: false,
         };
+    },
+    computed: {
+        formattedDate() {
+            return format(this.report.lastViewed, "yyyy-MM-dd HH:mm");
+        },
     },
     methods: {
         handleClickOutside(event) {

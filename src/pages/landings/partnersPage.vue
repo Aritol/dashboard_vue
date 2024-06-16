@@ -235,7 +235,6 @@ export default {
 .wrapper {
     margin: 0 auto;
     margin-top: 100px;
-    // text-align: center;
 }
 
 .header_container {
@@ -273,10 +272,8 @@ export default {
 
 .partners_review_container {
     margin-top: 100px;
-    // display: flex;
     display: flex;
-    justify-content: center; /* Горизонтальне центрування */
-    // align-items: center;
+    justify-content: center;
 }
 
 .column {
@@ -285,14 +282,10 @@ export default {
 }
 
 .partner_container {
-    // float: left;
-    // width: 26%;
-    width: 100%;
     max-width: 450px;
     padding: 35px;
     margin: 50px 30px;
     transition: all 0.25s ease;
-    // margin-bottom: 30px;
     border: 2px solid #f5f5f5;
     border-radius: 2px;
 
@@ -302,10 +295,8 @@ export default {
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
     }
     .partner_logo {
-        // img {
         max-width: 130px;
         max-height: 60px;
-        // }
     }
 }
 
